@@ -4,17 +4,21 @@ import WalletProvider from './context/WalletContext';
 
 const Layout = lazy(() => import('./components/Layout'));
 const Home = lazy(() => import('./pages/Home'));
-const Test = lazy(() => import('./pages/Test'));
+const PdfToQuiz = lazy(() => import('./pages/PdfToQuiz'));
+const PromptToQuiz = lazy(() => import('./pages/PromptToQuiz'));
+const LeaderBoards = lazy(() => import('./pages/LeaderBoards')) 
 
 const App = () => {
   return (
-    <WalletProvider> {/* Wrap the entire app with WalletProvider */}
+    <WalletProvider>
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
             <Route element={<Layout />}>
               <Route path='/' element={<Home />} />
-              <Route path='/test' element={<Test />} />
+              <Route path='/pdfToQuiz' element={<PdfToQuiz />} />
+              <Route path='/promptToQuiz' element={<PromptToQuiz />} />
+              <Route path='/leaderboards/:id' element={<LeaderBoards />} />
             </Route>
           </Routes>
         </Suspense>

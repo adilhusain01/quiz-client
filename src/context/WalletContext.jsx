@@ -11,7 +11,7 @@ const WalletProvider = ({ children }) => {
       if (window.tronWeb && window.tronWeb.ready) {
         const address = window.tronWeb.defaultAddress.base58;
         setWalletAddress(address);
-        localStorage.setItem('walletAddress', address); // Save to localStorage
+        localStorage.setItem('walletAddress', address);
       } else {
         alert("Install or unlock TronLink");
       }
@@ -24,7 +24,7 @@ const WalletProvider = ({ children }) => {
     if (window.tronWeb && window.tronWeb.ready) {
       const address = window.tronWeb.defaultAddress.base58;
       setWalletAddress(address);
-      localStorage.setItem('walletAddress', address); // Save to localStorage
+      localStorage.setItem('walletAddress', address);
     }
   }, []);
 
