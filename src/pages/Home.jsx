@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { WalletContext } from '../context/WalletContext';
+import toast from 'react-hot-toast';
+import axios from '../api/axios';
 
 const Home = () => {
+  const { walletAddress, connectWallet } = useContext(WalletContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [joinQuizCode, setJoinQuizCode] = useState('');
   const [leaderboardsCode, setLeaderboardsCode] = useState('');
+  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -25,6 +30,28 @@ const Home = () => {
     };
   }, []);
 
+  const handleJoinQuiz = async () => {
+    if (!walletAddress) {
+      toast.error('Please connect your wallet first.');
+      await connectWallet();
+      return;
+    }
+
+    try {
+      const response = await axios.post(`/api/quiz/verify/${joinQuizCode}`, {
+        walletAddress
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      toast.success('Redirecting ...');
+      navigate(`/quiz/${joinQuizCode}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'An error occurred while joining the quiz.');
+    }
+  };
+
   return (
     <>
       <section 
@@ -40,7 +67,12 @@ const Home = () => {
               placeholder="Enter Code" 
               className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
             />
-            <Link to={'/'} className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-white text-center bg-matte-dark hover:bg-matte-light w-full rounded-md">Join Quiz</Link>
+            <button 
+              onClick={handleJoinQuiz} 
+              className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-white text-center bg-matte-dark hover:bg-matte-light w-full rounded-md"
+            >
+              Join Quiz
+            </button>
           </div>
           <h2 className='text-[1.5rem] text-white font-bold'>Or</h2>
           <div className="p-[1rem] flex flex-col items-center justify-center bg-white gap-[0.5rem] w-[20rem] rounded-md shadow-md">

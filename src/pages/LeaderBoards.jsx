@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import axios from '../api/axios';
+import { CircularProgress } from '@mui/material';
 
 const LeaderBoards = () => {
-  const { quizId } = useParams();
+  const { id } = useParams();
+  const [loading, setLoading] = useState(true);
   const [quiz, setQuiz] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,49 +14,23 @@ const LeaderBoards = () => {
   const [allParticipants, setAllParticipants] = useState([]);
 
   useEffect(() => {
-    const fetchQuiz = async () => {
+    const fetchLeaderBoards = async () => {      
       try {
-        // const quizResponse = await axios.get(`/api/quizzes/${quizId}`);
-        // setQuiz(quizResponse.data);
-
-        // Dummy data for quiz
-        setQuiz({
-          quizId: '12345',
-          creatorName: 'John Doe',
-          creatorWallet: '0x1234567890abcdef',
-          questions: [],
-          expiry: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-          numQuestions: 5,
-          totalCost: 100
-        });
+        const response = await axios.get(`/api/quiz/leaderboards/${id}`);
+        
+        setQuiz(response.data.quiz);
+        setParticipants(response.data.participants || []);
+        setAllParticipants(response.data.participants || []);
+        setLoading(false);
       } catch (error) {
-        toast.error('Failed to fetch quiz');
+        console.log(error);
+        toast.error('Failed to fetch leaderboard data');
+        setLoading(false);
       }
     };
 
-    const fetchParticipants = async () => {
-      try {
-        // const participantResponse = await axios.get(`/api/participants/${quizId}`);
-        // setParticipants(participantResponse.data);
-
-        // Dummy data for participants
-        const dummyParticipants = [
-          { quizId: '12345', participantName: 'Alice', walletAddress: '0xabcdef1234567890', score: 2 },
-          { quizId: '12345', participantName: 'Bob', walletAddress: '0xabcdef1234567891', score: 3 },
-          { quizId: '12345', participantName: 'Charlie', walletAddress: '0xabcdef1234567892', score: 4 },
-          { quizId: '12345', participantName: 'David', walletAddress: '0xabcdef1234567893', score: 1 },
-          { quizId: '12345', participantName: 'Eve', walletAddress: '0xabcdef1234567894', score: 5 }
-        ];
-        setParticipants(dummyParticipants);
-        setAllParticipants(dummyParticipants);
-      } catch (error) {
-        toast.error('Failed to fetch participants');
-      }
-    };
-
-    fetchQuiz();
-    fetchParticipants();
-  }, [quizId]);
+    fetchLeaderBoards();
+  }, [id]);
 
   const getRemainingTime = (expiry) => {
     const now = new Date();
@@ -96,8 +72,22 @@ const LeaderBoards = () => {
     return 0;
   });
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center bg-violet" style={{ height: 'calc(100vh - 5rem)' }}>
+        <CircularProgress sx={{color: 'white'}} />
+      </div>
+    )
+  }
+
   if (!quiz) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center bg-violet" style={{ height: 'calc(100vh - 5rem)' }}>
+        <Typography variant="h4" className="text-white font-bold">
+          Quiz not found!
+        </Typography>
+      </div>
+    )
   }
 
   return (
@@ -109,7 +99,7 @@ const LeaderBoards = () => {
        <h2 className='text-[1.75rem] text-center font-semibold text-white'>Quiz #{quiz.quizId}</h2>
       <div className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white w-[40rem] gap-[2.5rem] rounded-md shadow-md">
         <div className='flex flex-row items-center justify-between w-full'>
-          <p className="text-[1.25rem] font-medium text-black">Questions: <span className='text-red-500'>{quiz.numQuestions}</span></p>
+          <p className="text-[1.25rem] font-medium text-black">Questions: <span className='text-red-500'>{quiz.questions.length}</span></p>
           <p className="text-[1.25rem] font-medium text-black">CountDown : <span className='text-green-500'>{getRemainingTime(quiz.expiry)}</span></p>
         </div>
 

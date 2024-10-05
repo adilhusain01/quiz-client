@@ -7,6 +7,7 @@ const Home = lazy(() => import('./pages/Home'));
 const PdfToQuiz = lazy(() => import('./pages/PdfToQuiz'));
 const PromptToQuiz = lazy(() => import('./pages/PromptToQuiz'));
 const LeaderBoards = lazy(() => import('./pages/LeaderBoards')) 
+const Quiz = lazy(() => import('./pages/Quiz')) 
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
               <Route path='/' element={<Home />} />
               <Route path='/pdfToQuiz' element={<PdfToQuiz />} />
               <Route path='/promptToQuiz' element={<PromptToQuiz />} />
+              <Route path='/quiz/:id' element={<Quiz />} />
               <Route path='/leaderboards/:id' element={<LeaderBoards />} />
             </Route>
           </Routes>
