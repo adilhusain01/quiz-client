@@ -131,7 +131,7 @@ const PromptToQuiz = () => {
           />
           <textarea 
             name="prompt" 
-            placeholder="Title" 
+            placeholder="Topic" 
             value={formData.prompt} 
             onChange={handleChange} 
             className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
