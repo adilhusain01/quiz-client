@@ -19,6 +19,8 @@ const Quiz = () => {
   const [quizStarted, setQuizStarted] = useState(false);
   const navigate = useNavigate();
 
+  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
+
   useEffect(() => {
     const fetchQuiz = async () => {
       if (!walletAddress) {
@@ -106,6 +108,7 @@ const Quiz = () => {
 
   const handleSubmitQuiz = async () => {
     try {
+      // Submit the quiz answers to the API first
       const response = await axios.post('/api/quiz/submit', {
         quizId: id,
         walletAddress,
@@ -115,14 +118,35 @@ const Quiz = () => {
           'Content-Type': 'application/json'
         }
       });
-      console.log(response.data);
-      
-      toast.success('Quiz submitted successfully!');
+  
+      console.log(response.data.score);
+      toast.success('Quiz submitted successfully to the API!');
+  
+      // After receiving the response from the API, interact with the smart contract
+      if (typeof window.tronLink !== 'undefined') {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  
+        // Use the score received from the API response to join the quiz on the contract
+        const tx = await contract.joinQuiz(
+          1,  // Assuming '1' is the quiz ID or use the correct ID from your contract
+          response.data.score  // Pass the score from the API
+        ).send({ from: walletAddress });
+  
+        console.log('Transaction ID:', tx);
+        toast.success('Quiz score submitted successfully to the smart contract!');
+      } else {
+        toast.error('TronLink not found. Please install TronLink.');
+      }
+  
+      // Navigate to leaderboards after successful submissions
       navigate(`/leaderboards/${id}`);
     } catch (err) {
+      // Handle errors from either API or smart contract interaction
       toast.error(err.response?.data?.error || 'An error occurred while submitting the quiz.');
     }
   };
+  
 
   const handleNameSubmit = () => {
     if (!participantName) {

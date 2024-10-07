@@ -176,6 +176,8 @@ const PdfToQuiz = () => {
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
       setIsPublic(false);
+
+      
       toast.success('Quiz has ended');
     } catch (error) {
       toast.error('Failed to end the quiz');
