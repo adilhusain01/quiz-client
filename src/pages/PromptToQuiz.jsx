@@ -34,11 +34,16 @@ const PromptToQuiz = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Ensure wallet is connected
     if (!walletAddress) {
       toast.error('Please connect the wallet');
       return;
     }
+  
     const { creatorName, prompt, numParticipants, questionCount, rewardPerScore } = formData;
+  
+    // Validate form data
     if (!creatorName || !prompt || !numParticipants || !questionCount || !rewardPerScore) {
       toast.error('All fields are required');
       return;
@@ -47,44 +52,52 @@ const PromptToQuiz = () => {
       toast.error('Question count cannot be more than 30');
       return;
     }
-
+  
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
-
+  
     try {
+      // Submit data to the API first
+      const dataToSubmit = {
+        creatorName,
+        prompt,
+        numParticipants,
+        questionCount,
+        rewardPerScore,
+        creatorWallet: walletAddress,
+        totalCost
+      };
+  
+      const response = await axios.post(`/api/quiz/create/prompt`, dataToSubmit, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      // Set quiz ID from API response
+      const quizId = response.data.quizId;
+      setQuizId(quizId);
+  
+      toast.success('Quiz successfully submitted to the API.');
+  
+      // Now handle the transaction with the smart contract
       if (typeof window.tronLink !== 'undefined') {
-
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-        const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue(); // Set a budget for quiz (e.g., 1 TRX)
-
+  
+        // Convert totalCost to Sun and handle floating-point precision
+        const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue();
+  
+        // Call the smart contract to create the quiz
         const tx = await contract.createQuiz(
-          'abc',
+          quizId,              // Use the quizId received from the API
           questionCount,
           rewardPerScore
         ).send({ callValue: budget, from: walletAddress });
-
+  
         console.log('Transaction ID:', tx);
-        toast.success('Quiz submitted to smart contract');
-
-        const dataToSubmit = {
-          creatorName,
-          prompt,
-          numParticipants,
-          questionCount,
-          rewardPerScore,
-          creatorWallet: walletAddress,
-          totalCost
-        };
-
-        const response = await axios.post(`/api/quiz/create/prompt`, dataToSubmit, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        setQuizId(response.data.quizId);
-        setOpen(true);
-        toast.success(`Quiz created successfully`);
-
+        toast.success('Quiz submitted to smart contract successfully.');
+  
+        // Reset form data after successful creation
         setFormData({
           creatorName: '',
           prompt: '',
@@ -92,9 +105,11 @@ const PromptToQuiz = () => {
           questionCount: '',
           rewardPerScore: ''
         });
-
+  
+        // Optionally, open modal or perform any other action
+        setOpen(true);
       } else {
-        toast.error('TronLink not found. Please install TronLink')
+        toast.error('TronLink not found. Please install TronLink.');
       }
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
@@ -103,7 +118,7 @@ const PromptToQuiz = () => {
       setLoading(false);
     }
   };
-
+  
   const handleClose = () => {
     setOpen(false);
   };

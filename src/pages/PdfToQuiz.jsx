@@ -46,11 +46,16 @@ const PdfToQuiz = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Ensure wallet is connected
     if (!walletAddress) {
       toast.error('Please connect the wallet');
       return;
     }
+  
     const { creatorName, numParticipants, questionCount, rewardPerScore } = formData;
+  
+    // Validate form data
     if (!creatorName || !numParticipants || !questionCount || !rewardPerScore || !pdfFile) {
       toast.error('All fields are required');
       return;
@@ -63,45 +68,53 @@ const PdfToQuiz = () => {
       toast.error('Numbers cannot be negative');
       return;
     }
+  
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
-
+  
     try {
-
+      // Submit the form data to the API first
+      const dataToSubmit = new FormData();
+      dataToSubmit.append('creatorName', creatorName);
+      dataToSubmit.append('creatorWallet', walletAddress);
+      dataToSubmit.append('numParticipants', numParticipants);
+      dataToSubmit.append('pdf', pdfFile);
+      dataToSubmit.append('questionCount', questionCount);
+      dataToSubmit.append('rewardPerScore', rewardPerScore);
+      dataToSubmit.append('totalCost', totalCost);
+  
+      setLoading(true);
+  
+      // API submission (first step)
+      const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+  
+      // Set quiz ID and notify success from API submission
+      const quizId = response.data.quizId;
+      setQuizId(quizId);
+      // toast.success(`Quiz successfully created and submitted to the API.`);
+  
+      // Now handle the transaction with the smart contract
       if (typeof window.tronWeb !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-        const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue(); // Set a budget for quiz (e.g., 1 TRX)
-
+  
+        // Convert totalCost to Sun and handle floating-point precision
+        const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue();
+  
+        // Call the smart contract to create the quiz with the quizId
         const tx = await contract.createQuiz(
-          'abc',
+          quizId,  // Use the quizId from API response
           questionCount,
           rewardPerScore
         ).send({ callValue: budget, from: walletAddress });
-
+  
         console.log('Transaction ID:', tx);
-        toast.success('Quiz submitted to smart contract');
-
-
-
-        const dataToSubmit = new FormData();
-        dataToSubmit.append('creatorName', creatorName);
-        dataToSubmit.append('creatorWallet', walletAddress);
-        dataToSubmit.append('numParticipants', numParticipants);
-        dataToSubmit.append('pdf', pdfFile);
-        dataToSubmit.append('questionCount', questionCount);
-        dataToSubmit.append('rewardPerScore', rewardPerScore);
-        dataToSubmit.append('totalCost', totalCost);
-
-        setLoading(true);
-
-        const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        setQuizId(response.data.quizId);
-        setOpen(true);
-        toast.success(`Quiz created successfully`);
+        toast.success('Quiz successfully submitted to the smart contract.');
+  
+        // Reset form data after both API and smart contract submission
         setFormData({
           creatorName: '',
           numParticipants: '',
@@ -112,8 +125,11 @@ const PdfToQuiz = () => {
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
+  
+        // Optionally open a modal or perform other actions
+        setOpen(true);
       } else {
-        toast.error('TronLink not found. Please install TronLink')
+        toast.error('TronLink not found. Please install TronLink.');
       }
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
@@ -122,6 +138,7 @@ const PdfToQuiz = () => {
       setLoading(false);
     }
   };
+  
 
   const handleClose = () => {
     setOpen(false);
