@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import axios from '../api/axios';
 import { Button, CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const Quiz = () => {
   const { id } = useParams();
@@ -250,10 +251,24 @@ const Quiz = () => {
               {Object.entries(currentQuestion.options).map(([key, value], index) => (
                 <div
                   key={key}
-                  className={`flex justify-center items-center rounded-lg text-white font-bold text-lg cursor-pointer transition-transform transform hover:scale-105 p-4 option-box-${index} ${answers[currentQuestion._id] === key ? 'border-2 border-white' : ''}`}
+                  className={`relative flex justify-center items-center rounded-lg text-black font-bold text-lg cursor-pointer transition-transform transform hover:scale-105 p-4 option-box-${index} ${answers[currentQuestion._id] === key ? 'border-2 border-white' : ''}`}
                   onClick={() => handleAnswerChange(currentQuestion._id, key)}
                 >
                   {value}
+                  {answers[currentQuestion._id] === key && (
+                    <CheckCircleIcon
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        color: 'green',
+                        fontSize: '2rem',
+                        color: '#9333ea',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  )}
                 </div>
               ))}
             </div>

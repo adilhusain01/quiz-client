@@ -112,6 +112,7 @@ const PromptToQuiz = () => {
         toast.error('TronLink not found. Please install TronLink.');
       }
     } catch (error) {
+      console.log(error);
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
       toast.error(error.response?.data?.message || 'An error occurred while creating the quiz');
     } finally {
