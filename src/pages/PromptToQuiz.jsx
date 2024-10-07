@@ -20,6 +20,7 @@ const PromptToQuiz = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const qrRef = useRef();
+  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,18 +46,37 @@ const PromptToQuiz = () => {
       return;
     }
 
-    const dataToSubmit = {
-      creatorName,
-      prompt,
-      expiry,
-      numParticipants,
-      questionCount,
-      creatorWallet: walletAddress
-    };
-
     setLoading(true);
 
-    try {
+  try {
+
+    if (typeof window.tronLink !== 'undefined') {
+      const tronWeb = window.tronLink.tronWeb;
+      console.log('TronWeb Instance:', tronWeb);
+      console.log("Quiz ID", quizId)
+      const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+      console.log('Contract Instance:', contract);
+      const budget = tronWeb.toSun('100'); // Set a budget for quiz (e.g., 1 TRX)
+      console.log('Budget in Sun:', budget);
+
+      const tx = await contract.createQuiz(
+        'abc',
+        questionCount,
+        1
+      ).send({callValue: budget, from: walletAddress });
+
+      console.log('Transaction ID:',tx);
+      toast.success('Quiz submitted to smart contract');
+
+      const dataToSubmit = {
+        creatorName,
+        prompt,
+        expiry,
+        numParticipants,
+        questionCount,
+        creatorWallet: walletAddress
+      };
+
       const response = await axios.post(`/api/quiz/create/prompt`, dataToSubmit, {
         headers: {
           'Content-Type': 'application/json'
@@ -73,6 +93,10 @@ const PromptToQuiz = () => {
         numParticipants: '',
         questionCount: ''
       });
+
+    } else {
+      toast.error('TronLink not found. Please install TronLink')
+    }
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
       toast.error(error.response?.data?.message || 'An error occurred while creating the quiz');
