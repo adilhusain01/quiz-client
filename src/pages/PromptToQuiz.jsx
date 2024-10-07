@@ -66,6 +66,8 @@ const PromptToQuiz = () => {
         creatorWallet: walletAddress,
         totalCost
       };
+
+      setLoading(true);
   
       const response = await axios.post(`/api/quiz/create/prompt`, dataToSubmit, {
         headers: {
@@ -76,8 +78,6 @@ const PromptToQuiz = () => {
       // Set quiz ID from API response
       const quizId = response.data.quizId;
       setQuizId(quizId);
-  
-      toast.success('Quiz successfully submitted to the API.');
   
       // Now handle the transaction with the smart contract
       if (typeof window.tronLink !== 'undefined') {
@@ -95,7 +95,7 @@ const PromptToQuiz = () => {
         ).send({ callValue: budget, from: walletAddress });
   
         console.log('Transaction ID:', tx);
-        toast.success('Quiz submitted to smart contract successfully.');
+        toast.success('Quiz successfully created');
   
         // Reset form data after successful creation
         setFormData({
