@@ -9,7 +9,7 @@ const { walletAddress, connectWallet } = useContext(WalletContext);
 
 const truncateAddress = (address) => {
   if (!address) return '';
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;  // Show first 6 and last 4 characters
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;  
 };
 
   return (

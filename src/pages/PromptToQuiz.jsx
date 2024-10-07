@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { WalletContext } from '../context/WalletContext';
 import toast from 'react-hot-toast';
 import axios from '../api/axios';
@@ -12,13 +12,15 @@ const PromptToQuiz = () => {
   const [formData, setFormData] = useState({
     creatorName: '',
     prompt: '',
-    expiry: '',
     numParticipants: '',
-    questionCount: ''
+    questionCount: '',
+    rewardPerScore: ''
   });
   const [quizId, setQuizId] = useState(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [participants, setParticipants] = useState([]);
   const qrRef = useRef();
 
   const handleChange = (e) => {
@@ -35,8 +37,8 @@ const PromptToQuiz = () => {
       toast.error('Please connect the wallet');
       return;
     }
-    const { creatorName, prompt, expiry, numParticipants, questionCount } = formData;
-    if (!creatorName || !prompt || !expiry || !numParticipants || !questionCount) {
+    const { creatorName, prompt, numParticipants, questionCount, rewardPerScore } = formData;
+    if (!creatorName || !prompt || !numParticipants || !questionCount || !rewardPerScore) {
       toast.error('All fields are required');
       return;
     }
@@ -45,13 +47,16 @@ const PromptToQuiz = () => {
       return;
     }
 
+    const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
+
     const dataToSubmit = {
       creatorName,
       prompt,
-      expiry,
       numParticipants,
       questionCount,
-      creatorWallet: walletAddress
+      rewardPerScore,
+      creatorWallet: walletAddress,
+      totalCost
     };
 
     setLoading(true);
@@ -69,9 +74,9 @@ const PromptToQuiz = () => {
       setFormData({
         creatorName: '',
         prompt: '',
-        expiry: '',
         numParticipants: '',
-        questionCount: ''
+        questionCount: '',
+        rewardPerScore: ''
       });
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
@@ -103,11 +108,44 @@ const PromptToQuiz = () => {
     toast.success('Link copied to clipboard');
   };
 
-  const baseUrl = import.meta.env.VITE_CLIENT_URI;
+  const handleStartQuiz = async () => {
+    try {
+      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: true });
+      setIsPublic(true);
+      toast.success('Quiz has started');
+    } catch (error) {
+      toast.error('Failed to start the quiz');
+    }
+  };
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
+  const handleStopQuiz = async () => {
+    try {
+      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
+      setIsPublic(false);
+      toast.success('Quiz has ended');
+    } catch (error) {
+      toast.error('Failed to end the quiz');
+    }
+  };
+
+  const fetchParticipants = async () => {
+    try {
+      const response = await axios.get(`/api/quiz/leaderboards/${quizId}`);
+      setParticipants(response.data.participants || []);
+    } catch (error) {
+      console.error('Failed to fetch participants:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (quizId) {
+      fetchParticipants();
+      const interval = setInterval(fetchParticipants, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [quizId]);
+
+  const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
   return (
     <section 
@@ -129,24 +167,6 @@ const PromptToQuiz = () => {
             className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
             required
           />
-          <textarea 
-            name="prompt" 
-            placeholder="Topic" 
-            value={formData.prompt} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
-            required
-          />
-          <input 
-            type="date" 
-            name="expiry" 
-            placeholder="Expiry Date" 
-            value={formData.expiry} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
-            required
-            min={minDate} // Set the minimum date to tomorrow
-          />
           <input 
             type="number" 
             name="numParticipants" 
@@ -167,6 +187,24 @@ const PromptToQuiz = () => {
             min="1"
             max="30"
           />
+          <input 
+            type="text" 
+            name="rewardPerScore" 
+            placeholder="Reward Per Score" 
+            value={formData.rewardPerScore} 
+            onChange={handleChange} 
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+            required
+            pattern="^\d+(\.\d{1,2})?$"
+          />
+          <textarea 
+            name="prompt" 
+            placeholder="Topic" 
+            value={formData.prompt} 
+            onChange={handleChange} 
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+            required
+          />
           <button 
             type="submit" 
             className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
@@ -175,37 +213,77 @@ const PromptToQuiz = () => {
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Quiz'}
           </button>
         </form>
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-          <DialogTitle>Quiz Created!</DialogTitle>
-          <DialogContent>
-            <div className="flex flex-col items-center justify-center gap-[1rem]" ref={qrRef}>
-              <h2 className="text-[1.25rem] text-center text-black">Quiz ID: <span className='text-[1.5rem] text-violet font-bold'>{quizId}</span></h2>
-              <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
-              <TextField
-                label="Quiz Link"
-                value={`${baseUrl}/quiz/${quizId}`}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={handleCopy}>
-                        <ContentCopyIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
+        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth >
+            <DialogContent>
+            <div className="flex flex-row gap-[2rem]">
+              <div className="flex flex-col items-center justify-center gap-[1rem]" ref={qrRef} style={{ flex: 1 }}>
+                <h2 className="text-[1.25rem] text-center text-black">Quiz ID: <span className='text-[1.5rem] text-violet font-bold'>{quizId}</span></h2>
+                <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
+                <TextField
+                  label="Quiz Link"
+                  value={`${baseUrl}/quiz/${quizId}`}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleCopy}>
+                          <ContentCopyIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  fullWidth
+                />
+            <DialogActions>
+              <IconButton onClick={handleDownload}  sx={{
+                    color : '#6b46c1'
+                  }}>
+                <FileDownloadIcon />
+              </IconButton>
+              <Button onClick={handleClose} sx={{
+                    color : '#6b46c1'
+                  }}>
+                Close
+              </Button>
+              <Button 
+                variant="contained" 
+                onClick={handleStartQuiz} 
+                disabled={isPublic || loading}
+                sx={{
+                  backgroundColor: '#6b46c1',
                 }}
-                fullWidth
-              />
+              >
+                Start Quiz
+              </Button>
+              <Button 
+                variant="contained" 
+                onClick={handleStopQuiz} 
+                disabled={!isPublic || loading}
+                sx={{
+                  backgroundColor: '#6b46c1',
+                }}
+              >
+                Stop Quiz
+              </Button>
+            </DialogActions>
             </div>
-          </DialogContent>
-          <DialogActions>
-            <IconButton onClick={handleDownload} color="primary">
-              <FileDownloadIcon />
-            </IconButton>
-            <Button onClick={handleClose} color="primary">
-              Close
-            </Button>
-          </DialogActions>
+            <div className="flex flex-col items-center justify-center gap-[1rem]" style={{ flex: 1 }}>
+            <h2 className="text-[1.25rem] text-center text-black">Participants</h2>
+            <ul className="h-full w-full px-[1rem] flex flex-col gap-[0.5rem]" style={{overflowY: 'scroll', scrollbarWidth: 'thin'}}>
+              {participants.map((participant) => (
+                <li key={participant.walletAddress} className="text-[1rem] text-black border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
+                  <span>
+                    {participant.participantName}
+                  </span>
+                  <span>
+                    {participant.score !== null ? participant.score : 'N/A'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            </div>
+            </div>
+            </DialogContent>
         </Dialog>
       </span>
     </section>
