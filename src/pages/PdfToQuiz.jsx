@@ -24,6 +24,7 @@ const PdfToQuiz = () => {
   const [participants, setParticipants] = useState([]);
   const qrRef = useRef();
   const fileInputRef = useRef();
+  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,35 +65,55 @@ const PdfToQuiz = () => {
     }
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
 
-    const dataToSubmit = new FormData();
-    dataToSubmit.append('creatorName', creatorName);
-    dataToSubmit.append('creatorWallet', walletAddress);
-    dataToSubmit.append('numParticipants', numParticipants);
-    dataToSubmit.append('pdf', pdfFile);
-    dataToSubmit.append('questionCount', questionCount);
-    dataToSubmit.append('rewardPerScore', rewardPerScore);
-    dataToSubmit.append('totalCost', totalCost);
-
-    setLoading(true);
-
     try {
-      const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+
+      if (typeof window.tronWeb !== 'undefined') {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+        const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue(); // Set a budget for quiz (e.g., 1 TRX)
+
+        const tx = await contract.createQuiz(
+          'abc',
+          questionCount,
+          rewardPerScore
+        ).send({ callValue: budget, from: walletAddress });
+
+        console.log('Transaction ID:', tx);
+        toast.success('Quiz submitted to smart contract');
+
+
+
+        const dataToSubmit = new FormData();
+        dataToSubmit.append('creatorName', creatorName);
+        dataToSubmit.append('creatorWallet', walletAddress);
+        dataToSubmit.append('numParticipants', numParticipants);
+        dataToSubmit.append('pdf', pdfFile);
+        dataToSubmit.append('questionCount', questionCount);
+        dataToSubmit.append('rewardPerScore', rewardPerScore);
+        dataToSubmit.append('totalCost', totalCost);
+
+        setLoading(true);
+
+        const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        setQuizId(response.data.quizId);
+        setOpen(true);
+        toast.success(`Quiz created successfully`);
+        setFormData({
+          creatorName: '',
+          numParticipants: '',
+          questionCount: '',
+          rewardPerScore: ''
+        });
+        setPdfFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
-      });
-      setQuizId(response.data.quizId);
-      setOpen(true);
-      toast.success(`Quiz created successfully`);
-      setFormData({
-        creatorName: '',
-        numParticipants: '',
-        questionCount: '',
-        rewardPerScore: ''
-      });
-      setPdfFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      } else {
+        toast.error('TronLink not found. Please install TronLink')
       }
     } catch (error) {
       console.error(error.response?.data?.message || 'An error occurred while creating the quiz');
@@ -164,66 +185,66 @@ const PdfToQuiz = () => {
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
   return (
-    <section 
+    <section
       className="w-full flex justify-center items-center"
       style={{ height: 'calc(100vh - 5rem)' }}
     >
       <span className='flex flex-col gap-[1rem]'>
         <h2 className='text-[1.75rem] text-center font-semibold text-white'>Pdf To Quiz</h2>
-        <form 
-          onSubmit={handleSubmit} 
+        <form
+          onSubmit={handleSubmit}
           className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white gap-[0.5rem] w-[20rem] rounded-md shadow-md"
         >
-          <input 
-            type="text" 
-            name="creatorName" 
-            placeholder="Creator Name" 
-            value={formData.creatorName} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+          <input
+            type="text"
+            name="creatorName"
+            placeholder="Creator Name"
+            value={formData.creatorName}
+            onChange={handleChange}
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
             required
           />
-          <input 
-            type="number" 
-            name="numParticipants" 
-            placeholder="Number of Participants" 
-            value={formData.numParticipants} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+          <input
+            type="number"
+            name="numParticipants"
+            placeholder="Number of Participants"
+            value={formData.numParticipants}
+            onChange={handleChange}
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
             required
             min="0"
           />
-          <input 
-            type="number" 
-            name="questionCount" 
-            placeholder="Number of Questions" 
-            value={formData.questionCount} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+          <input
+            type="number"
+            name="questionCount"
+            placeholder="Number of Questions"
+            value={formData.questionCount}
+            onChange={handleChange}
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
             required
             min="1"
             max="30"
           />
-          <input 
-            type="text" 
-            name="rewardPerScore" 
-            placeholder="Reward Per Score" 
-            value={formData.rewardPerScore} 
-            onChange={handleChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+          <input
+            type="text"
+            name="rewardPerScore"
+            placeholder="Reward Per Score"
+            value={formData.rewardPerScore}
+            onChange={handleChange}
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
             required
             pattern="^\d+(\.\d{1,2})?$"
           />
-          <input 
-            type="file" 
-            accept="application/pdf" 
-            onChange={handleFileChange} 
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
             required
             ref={fileInputRef}
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
             disabled={loading}
           >
@@ -252,17 +273,17 @@ const PdfToQuiz = () => {
                   fullWidth
                 />
                 <DialogActions>
-                  <IconButton onClick={handleDownload} sx={{color: '#6b46c1'}}>
+                  <IconButton onClick={handleDownload} sx={{ color: '#6b46c1' }}>
                     <FileDownloadIcon />
                   </IconButton>
                   <Button onClick={handleClose} sx={{
-                    color : '#6b46c1'
+                    color: '#6b46c1'
                   }}>
                     Close
                   </Button>
-                  <Button 
-                    variant="contained" 
-                    onClick={handleStartQuiz} 
+                  <Button
+                    variant="contained"
+                    onClick={handleStartQuiz}
                     disabled={isPublic || loading}
                     sx={{
                       backgroundColor: '#6b46c1',
@@ -270,9 +291,9 @@ const PdfToQuiz = () => {
                   >
                     Start Quiz
                   </Button>
-                  <Button 
-                    variant="contained" 
-                    onClick={handleStopQuiz} 
+                  <Button
+                    variant="contained"
+                    onClick={handleStopQuiz}
                     disabled={!isPublic || loading}
                     sx={{
                       backgroundColor: '#6b46c1',
@@ -284,7 +305,7 @@ const PdfToQuiz = () => {
               </div>
               <div className="flex flex-col items-center justify-center gap-[1rem]" style={{ flex: 1 }}>
                 <h2 className="text-[1.25rem] text-center text-black">Participants</h2>
-                <ul className="h-full w-full px-[1rem] flex flex-col gap-[0.5rem]" style={{overflowY: 'scroll', scrollbarWidth: 'thin'}}>
+                <ul className="h-full w-full px-[1rem] flex flex-col gap-[0.5rem]" style={{ overflowY: 'scroll', scrollbarWidth: 'thin' }}>
                   {participants.map((participant) => (
                     <li key={participant.walletAddress} className="text-[1rem] text-black border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
                       <span>
