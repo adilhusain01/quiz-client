@@ -115,6 +115,8 @@ const Quiz = () => {
           'Content-Type': 'application/json'
         }
       });
+      console.log(response.data);
+      
       toast.success('Quiz submitted successfully!');
       navigate(`/leaderboards/${id}`);
     } catch (err) {

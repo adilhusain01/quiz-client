@@ -112,7 +112,7 @@ const PdfToQuiz = () => {
         ).send({ callValue: budget, from: walletAddress });
   
         console.log('Transaction ID:', tx);
-        toast.success('Quiz successfully submitted to the smart contract.');
+        toast.success('Quiz successfully created.');
   
         // Reset form data after both API and smart contract submission
         setFormData({
