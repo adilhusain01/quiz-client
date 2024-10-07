@@ -15,6 +15,8 @@ const Quiz = () => {
   const [answers, setAnswers] = useState({});
   const [participantName, setParticipantName] = useState('');
   const [nameDialogOpen, setNameDialogOpen] = useState(true);
+  const [timer, setTimer] = useState(30);
+  const [quizStarted, setQuizStarted] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +46,23 @@ const Quiz = () => {
     fetchQuiz();
   }, [id, walletAddress, connectWallet]);
 
+  useEffect(() => {
+    let interval;
+    if (quizStarted) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => {
+          if (prevTimer <= 1) {
+            handleNextQuestion();
+            return 30;
+          }
+          return prevTimer - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [quizStarted, currentQuestionIndex]);
+
   const handleAnswerChange = (questionId, answer) => {
     setAnswers({
       ...answers,
@@ -52,6 +71,14 @@ const Quiz = () => {
   };
 
   const handleNextQuestion = () => {
+    const currentQuestion = quiz.questions[currentQuestionIndex];
+    if (!answers[currentQuestion._id]) {
+      setAnswers({
+        ...answers,
+        [currentQuestion._id]: 'no_answer'
+      });
+    }
+    setTimer(30);
     if (currentQuestionIndex < quiz.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
@@ -59,11 +86,28 @@ const Quiz = () => {
     }
   };
 
+  const handleJoinQuiz = async () => {
+    try {
+      const response = await axios.post(`/api/quiz/join/${id}`, {
+        walletAddress,
+        participantName
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      toast.success('Joined quiz successfully!');
+      setNameDialogOpen(false);
+      setQuizStarted(true); // Start the quiz and timer
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'An error occurred while joining the quiz.');
+    }
+  };
+
   const handleSubmitQuiz = async () => {
     try {
       const response = await axios.post('/api/quiz/submit', {
         quizId: id,
-        participantName,
         walletAddress,
         answers
       }, {
@@ -83,7 +127,7 @@ const Quiz = () => {
       toast.error('Please enter your name.');
       return;
     }
-    setNameDialogOpen(false);
+    handleJoinQuiz();
   };
 
   if (loading) {
@@ -164,6 +208,17 @@ const Quiz = () => {
               >
                 {currentQuestionIndex < quiz.questions.length - 1 ? 'Next' : 'Submit'}
               </Button>
+            </div>
+            <div className="flex flex-col items-end justify-between mb-4">
+              <Typography variant="h6" className="text-lg text-white font-bold max-w-fit">
+                Time Left: {timer}s
+              </Typography>
+              <motion.div
+                initial={{ width: '100%' }}
+                animate={{ width: `${(timer / 30) * 100}%` }}
+                transition={{ duration: 1, ease: 'linear' }}
+                className="h-2 bg-purple-600"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4 h-full">
               {Object.entries(currentQuestion.options).map(([key, value], index) => (

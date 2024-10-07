@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import axios from '../api/axios';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 
 const LeaderBoards = () => {
   const { id } = useParams();
@@ -31,18 +31,6 @@ const LeaderBoards = () => {
 
     fetchLeaderBoards();
   }, [id]);
-
-  const getRemainingTime = (expiry) => {
-    const now = new Date();
-    const expiryDate = new Date(expiry);
-    const remainingTime = expiryDate - now;
-    if (remainingTime <= 0) {
-      return 'Closed';
-    }
-    const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m`;
-  };
 
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
@@ -100,7 +88,7 @@ const LeaderBoards = () => {
       <div className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white w-[40rem] gap-[2.5rem] rounded-md shadow-md">
         <div className='flex flex-row items-center justify-between w-full'>
           <p className="text-[1.25rem] font-medium text-black">Questions: <span className='text-red-500'>{quiz.questions.length}</span></p>
-          <p className="text-[1.25rem] font-medium text-black">CountDown : <span className='text-green-500'>{getRemainingTime(quiz.expiry)}</span></p>
+          <p className="text-[1.25rem] font-medium text-black">Status : <span className={`${quiz.isPublic ? 'text-green-500' : 'text-red-500'}`}>{quiz.isPublic ? 'Open' : 'Closed'}</span></p>
         </div>
 
         <div className='flex flex-row items-center justify-between w-full'>
