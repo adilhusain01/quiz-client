@@ -84,7 +84,7 @@ const LeaderBoards = () => {
       style={{ height: 'calc(100vh - 5rem)' }}
       >
        <span className='flex flex-col gap-[1rem]'>
-       <h2 className='text-[1.75rem] text-center font-semibold text-white'>Quiz #{quiz.quizId}</h2>
+       <h2 className='text-[1.75rem] text-center font-semibold text-white'>Quiz <span className='text-purple-400'>#{quiz.quizId}</span></h2>
       <div className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white w-[40rem] gap-[2.5rem] rounded-md shadow-md">
         <div className='flex flex-row items-center justify-between w-full'>
           <p className="text-[1.25rem] font-medium text-black">Questions: <span className='text-red-500'>{quiz.questions.length}</span></p>
