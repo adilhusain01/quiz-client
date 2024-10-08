@@ -142,7 +142,7 @@ const Quiz = () => {
         const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
         console.log("Plus One Index", plusoneindex);
   
-        const score = response.data.score * 10000000; // Adjust score as per contract needs
+        const score = response.data.score * 1000000; // Adjust score as per contract needs
   
         // Use the score from the API response to join the quiz on the contract
         const tx = await contract.joinQuiz(
