@@ -49,6 +49,8 @@ const Quiz = () => {
     };
 
     fetchQuiz();
+    loadAllQuizzes(); // Ensure loadAllQuizzes is awaited
+
   }, [id, walletAddress, connectWallet]);
 
   useEffect(() => {
@@ -122,24 +124,30 @@ const Quiz = () => {
         }
       });
   
-      console.log(response.data.score);
       toast.success('Quiz submitted successfully to the API!');
-      loadAllQuizzes();
+      console.log(response.data.score);
   
-      // After receiving the response from the API, interact with the smart contract
+      // Load all quizzes first, ensuring it completes before proceeding
+  
+      // After loadAllQuizzes completes, proceed with smart contract interaction
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
   
         const qid = response.data.quizId;
-        const quizIndex = quizQids.indexOf(qid);
-        console.log("Quiz Index",quizIndex);
-        const plusoneindex = quizIndex + 1;
-        console.log("Plus One Index",plusoneindex);
-        // Use the score received from the API response to join the quiz on the contract
+        
+        const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
+        console.log("Quiz Index", quizIndex);
+  
+        const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
+        console.log("Plus One Index", plusoneindex);
+  
+        const score = response.data.score * 10000000; // Adjust score as per contract needs
+  
+        // Use the score from the API response to join the quiz on the contract
         const tx = await contract.joinQuiz(
-          plusoneindex,  // Assuming '1' is the quiz ID or use the correct ID from your contract
-          response.data.score  // Pass the score from the API
+          plusoneindex, // Use the correct quiz index
+          score         // Pass the score from API
         ).send({ from: walletAddress });
   
         console.log('Transaction ID:', tx);
@@ -155,6 +163,7 @@ const Quiz = () => {
       toast.error(err.response?.data?.error || 'An error occurred while submitting the quiz.');
     }
   };
+  
   
   const loadAllQuizzes = async () => {
     try {
