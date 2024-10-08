@@ -18,9 +18,11 @@ const Quiz = () => {
   const [nameDialogOpen, setNameDialogOpen] = useState(true);
   const [timer, setTimer] = useState(30);
   const [quizStarted, setQuizStarted] = useState(false);
+  const [quizEnded, setQuizEnded] = useState(false);
   const navigate = useNavigate();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
+  const [error, setError] = useState('');
 
   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN'
 
@@ -38,12 +40,14 @@ const Quiz = () => {
             'Content-Type': 'application/json'
           }
         });
-        // console.log(response.data);
         
         setQuiz(response.data);
+        setQuizStarted(response.data.isPublic);
+        setQuizEnded(response.data.isFinished);
         setLoading(false);
       } catch (err) {
-        toast.error(err.response?.data?.error || 'An error occurred while fetching the quiz.');
+        setError(err.response?.data?.error);
+        // toast.error(err.response?.data?.error || 'An error occurred while fetching the quiz.');
         setLoading(false);
       }
     };
@@ -124,8 +128,7 @@ const Quiz = () => {
         }
       });
   
-      toast.success('Quiz submitted successfully to the API!');
-      // console.log(response.data.score);
+      // toast.success('Quiz submitted successfully to the API!');
   
       // Load all quizzes first, ensuring it completes before proceeding
   
@@ -137,10 +140,8 @@ const Quiz = () => {
         const qid = response.data.quizId;
         
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
-        // console.log("Quiz Index", quizIndex);
   
         const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
-        // console.log("Plus One Index", plusoneindex);
   
         const score = response.data.score * 1000000; // Adjust score as per contract needs
   
@@ -150,7 +151,6 @@ const Quiz = () => {
           score         // Pass the score from API
         ).send({ from: walletAddress });
   
-        // console.log('Transaction ID:', tx);
         toast.success('Quiz score submitted successfully to the smart contract!');
       } else {
         toast.error('TronLink not found. Please install TronLink.');
@@ -164,7 +164,6 @@ const Quiz = () => {
     }
   };
   
-  
   const loadAllQuizzes = async () => {
     try {
       if (typeof window.tronLink !== 'undefined') {
@@ -177,8 +176,6 @@ const Quiz = () => {
         // result will be an object with two arrays: quizIds and quizQids
         setQuizIds(result[0]);
         setQuizQids(result[1]);
-        // console.log("Result",result[0]);
-        toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');
       }
@@ -187,7 +184,6 @@ const Quiz = () => {
       toast.error('Failed to load quizzes');
     }
   }
-
 
   const handleNameSubmit = () => {
     if (!participantName) {
@@ -205,14 +201,34 @@ const Quiz = () => {
     )
   }
 
-  if (!quiz) {
+
+
+  if (quizEnded) {
     return (
       <div className="flex justify-center items-center bg-violet" style={{ height: 'calc(100vh - 5rem)' }}>
         <Typography variant="h4" className="text-white font-bold">
-          Quiz not found!
+          The Quiz has Ended
         </Typography>
       </div>
-    )
+    );
+  }
+
+  if (!quizStarted) {
+    return (
+      <div className="flex flex-col justify-center items-center bg-violet gap-[1rem]" style={{ height: 'calc(100vh - 5rem)' }}>
+        <Typography variant="h4" className="text-white font-bold">
+          Quiz hasn't started yet
+        </Typography>
+        <Button onClick={() => window.location.reload()} sx={{
+          backgroundColor: '#333333',
+          color: 'white',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+        }}>
+          Refresh
+        </Button>
+      </div>
+    );
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
@@ -301,7 +317,6 @@ const Quiz = () => {
                         position: 'absolute',
                         top: 8,
                         right: 8,
-                        color: 'green',
                         fontSize: '2rem',
                         color: '#9333ea',
                         backgroundColor: 'white',

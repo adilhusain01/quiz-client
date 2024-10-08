@@ -3,11 +3,10 @@ import { WalletContext } from '../context/WalletContext';
 import toast from 'react-hot-toast';
 import axios from '../api/axios';
 import { QRCodeSVG } from 'qrcode.react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, TextField, InputAdornment, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, DialogActions, Button, IconButton, TextField, InputAdornment, CircularProgress } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-// import TronLink from 'tronlink-web-extension';
 
 const PdfToQuiz = () => {
   const { walletAddress } = useContext(WalletContext);
@@ -23,11 +22,13 @@ const PdfToQuiz = () => {
   const [loading, setLoading] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [participants, setParticipants] = useState([]);
+  const [closeDisabled, setCloseDisabled] = useState(true);
+  const [stoppedQuiz, setStoppedQuiz] = useState(false);
   const qrRef = useRef();
   const fileInputRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN'
+  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,7 +51,6 @@ const PdfToQuiz = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure wallet is connected
     if (!walletAddress) {
       toast.error('Please connect the wallet');
       return;
@@ -58,7 +58,6 @@ const PdfToQuiz = () => {
 
     const { creatorName, numParticipants, questionCount, rewardPerScore } = formData;
 
-    // Validate form data
     if (!creatorName || !numParticipants || !questionCount || !rewardPerScore || !pdfFile) {
       toast.error('All fields are required');
       return;
@@ -75,7 +74,6 @@ const PdfToQuiz = () => {
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
 
     try {
-      // Submit the form data to the API first
       const dataToSubmit = new FormData();
       dataToSubmit.append('creatorName', creatorName);
       dataToSubmit.append('creatorWallet', walletAddress);
@@ -87,37 +85,30 @@ const PdfToQuiz = () => {
 
       setLoading(true);
 
-      // API submission (first step)
       const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      // Set quiz ID and notify success from API submission
       const quizId = response.data.quizId;
       setQuizId(quizId);
-      // toast.success(`Quiz successfully created and submitted to the API.`);
 
-      // Now handle the transaction with the smart contract
       if (typeof window.tronWeb !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
 
-        // Convert totalCost to Sun and handle floating-point precision
         const budget = tronWeb.toBigNumber(tronWeb.toSun(totalCost)).integerValue();
 
-        // Call the smart contract to create the quiz with the quizId
         const tx = await contract.createQuiz(
-          quizId,  // Use the quizId from API response
+          quizId,
           questionCount,
           rewardPerScore
         ).send({ callValue: budget, from: walletAddress });
 
-        // console.log('Transaction ID:', tx);
         toast.success('Quiz successfully created.');
         loadAllQuizzes();
-        // Reset form data after both API and smart contract submission
+
         setFormData({
           creatorName: '',
           numParticipants: '',
@@ -129,7 +120,6 @@ const PdfToQuiz = () => {
           fileInputRef.current.value = '';
         }
 
-        // Optionally open a modal or perform other actions
         setOpen(true);
       } else {
         toast.error('TronLink not found. Please install TronLink.');
@@ -141,7 +131,6 @@ const PdfToQuiz = () => {
       setLoading(false);
     }
   };
-
 
   const handleClose = () => {
     setOpen(false);
@@ -166,6 +155,7 @@ const PdfToQuiz = () => {
   };
 
   const handleStartQuiz = async () => {
+    setStoppedQuiz(false);
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: true });
       setIsPublic(true);
@@ -176,21 +166,20 @@ const PdfToQuiz = () => {
   };
 
   const handleStopQuiz = async () => {
+    setStoppedQuiz(true);
+
     try {
-      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
+      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false, isFinished: true });
       setIsPublic(false);
-  
+      setCloseDisabled(false);
+
       if (typeof window.tronWeb !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-  
+
         const quizIndex = quizQids.indexOf(quizId);
-        // console.log("Quiz Index",quizIndex);
         const plusoneindex = quizIndex + 1;
-        // console.log("Plus One Index",plusoneindex);
         const tx = await contract.endQuiz(plusoneindex).send({ from: walletAddress });
-  
-        // console.log('Transaction ID:', tx);
       } else {
         toast.error("Failed to End Quiz");
       }
@@ -200,21 +189,16 @@ const PdfToQuiz = () => {
     }
   };
 
-
   const loadAllQuizzes = async () => {
     try {
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
 
-        // Call the getAllQuizzes function
         const result = await contract.getAllQuizzes().call();
 
-        // result will be an object with two arrays: quizIds and quizQids
         setQuizIds(result[0]);
         setQuizQids(result[1]);
-        // console.log("Result",result[0]);
-        toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');
       }
@@ -222,199 +206,202 @@ const PdfToQuiz = () => {
       console.error(error);
       toast.error('Failed to load quizzes');
     }
-  }
+  };
 
+  const fetchParticipants = async () => {
+    try {
+      const response = await axios.get(`/api/quiz/leaderboards/${quizId}`);
+      setParticipants(response.data.participants || []);
+    } catch (error) {
+      console.error('Failed to fetch participants:', error);
+    }
+  };
 
-const fetchParticipants = async () => {
-  try {
-    const response = await axios.get(`/api/quiz/leaderboards/${quizId}`);
-    setParticipants(response.data.participants || []);
-  } catch (error) {
-    console.error('Failed to fetch participants:', error);
-  }
-};
+  useEffect(() => {
+    if (quizId) {
+      fetchParticipants();
+      const interval = setInterval(fetchParticipants, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [quizId]);
 
-useEffect(() => {
-  if (quizId) {
-    fetchParticipants();
-    const interval = setInterval(fetchParticipants, 1000);
-    return () => clearInterval(interval);
-  }
-}, [quizId]);
+  const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
-const baseUrl = import.meta.env.VITE_CLIENT_URI;
+  return (
+    <section
+      className="mt-[-5rem] w-full flex items-center justify-center"
+      style={{ height: 'calc(100vh - 5rem)' }}
+    >
+      <span className='flex flex-col gap-[1rem]'>
+        <h2 className='text-[3.125rem] text-center font-semibold text-white'>Pdf To Quiz</h2>
 
-return (
-  <section
-    className="mt-[-5rem] w-full flex items-center justify-center"
-    style={{ height: 'calc(100vh - 5rem)' }}
-  >
-    <span className='flex flex-col gap-[1rem]'>
-      <h2 className='text-[3.125rem] text-center font-semibold text-white'>Pdf To Quiz</h2>
-
-      <form
-        onSubmit={handleSubmit}
-        className="m-auto p-[1.5rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.75rem] w-[45rem] rounded-lg shadow-2xl"
-      >
-        <input
-          type="text"
-          name="creatorName"
-          placeholder="Creator Name"
-          value={formData.creatorName}
-          onChange={handleChange}
-          className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
-          required
-          style={{
-            backgroundColor: '#9333ea',
-            boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
-          }}
-        />
-        <div className='grid grid-cols-3 gap-[0.5rem]'>
-        <input
-          type="number"
-          name="numParticipants"
-          placeholder="No. of Participants"
-          value={formData.numParticipants}
-          onChange={handleChange}
-          className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
-          required
-          min="0"
-          style={{
-            backgroundColor: '#9333ea',
-            boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
-          }}
-        />
-        <input
-          type="number"
-          name="questionCount"
-          placeholder="No. of Questions"
-          value={formData.questionCount}
-          onChange={handleChange}
-          className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
-          required
-          min="1"
-          max="30"
-          style={{
-            backgroundColor: '#9333ea',
-            boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
-          }}
-        />
-        <input
-          type="text"
-          name="rewardPerScore"
-          placeholder="Reward Per Score"
-          value={formData.rewardPerScore}
-          onChange={handleChange}
-          className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
-          required
-          pattern="^\d+(\.\d{1,2})?$"
-          style={{
-            backgroundColor: '#9333ea',
-            boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
-          }}
-        />
-        </div>
-        <div className="flex items-center gap-[0.5rem] w-full">
-          <label htmlFor="pdf-upload" className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-center flex items-center justify-center text-white bg-matte-dark hover:bg-matte-light max-w-fit rounded-md cursor-pointer">
-            Choose Pdf
-          </label>
-          <input
-            id="pdf-upload"
-            type="file"
-            accept="application/pdf"
-            onChange={handleFileChange}
-            className="hidden"
-            required
-            ref={fileInputRef}
-          />
-          {pdfFile && (
-            <div className="flex items-center gap-[0.5rem]">
-              <PictureAsPdfIcon style={{ color: 'red' }} />
-              <span className="text-white">{pdfFile.name}</span>
-            </div>
-          )}
-        </div>
-        <button
-          type="submit"
-          className="px-[0.5rem] py-[1.25rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
-          disabled={loading}
+        <form
+          onSubmit={handleSubmit}
+          className="m-auto p-[1.5rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.75rem] w-[45rem] rounded-lg shadow-2xl"
         >
-          {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Quiz'}
-        </button>
-      </form>
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth >
-        <DialogContent>
-          <div className="flex flex-row gap-[2rem]">
-            <div className="flex flex-col items-center justify-center gap-[1rem]" ref={qrRef} style={{ flex: 1 }}>
-              <h2 className="text-[1.25rem] text-center text-black">Quiz ID: <span className='text-[1.5rem] text-violet font-bold'>{quizId}</span></h2>
-              <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
-              <TextField
-                label="Quiz Link"
-                value={`${baseUrl}/quiz/${quizId}`}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={handleCopy}>
-                        <ContentCopyIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                fullWidth
-              />
-              <DialogActions>
-                <IconButton onClick={handleDownload} sx={{ color: '#6b46c1' }}>
-                  <FileDownloadIcon />
-                </IconButton>
-                <Button onClick={handleClose} sx={{
-                  color: '#6b46c1'
-                }}>
-                  Close
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleStartQuiz}
-                  disabled={isPublic || loading}
-                  sx={{
-                    backgroundColor: '#6b46c1',
-                  }}
-                >
-                  Start Quiz
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleStopQuiz}
-                  disabled={!isPublic || loading}
-                  sx={{
-                    backgroundColor: '#6b46c1',
-                  }}
-                >
-                  Stop Quiz
-                </Button>
-              </DialogActions>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-[1rem]" style={{ flex: 1 }}>
-              <h2 className="text-[1.25rem] text-center text-black">Participants</h2>
-              <ul className="h-full w-full px-[1rem] flex flex-col gap-[0.5rem]" style={{ overflowY: 'scroll', scrollbarWidth: 'thin' }}>
-                {participants.map((participant) => (
-                  <li key={participant.walletAddress} className="text-[1rem] text-black border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
-                    <span>
-                      {participant.participantName}
-                    </span>
-                    <span>
-                      {participant.score !== null ? participant.score : 'N/A'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <input
+            type="text"
+            name="creatorName"
+            placeholder="Creator Name"
+            value={formData.creatorName}
+            onChange={handleChange}
+            className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
+            required
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
+            autoComplete='off'
+          />
+          <div className='grid grid-cols-3 gap-[0.5rem]'>
+            <input
+              type="number"
+              name="numParticipants"
+              placeholder="No. of Participants"
+              value={formData.numParticipants}
+              onChange={handleChange}
+              className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
+              required
+              min="1"
+              style={{
+                backgroundColor: '#9333ea',
+                boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+              }}
+              autoComplete='off'
+            />
+            <input
+              type="number"
+              name="questionCount"
+              placeholder="No. of Questions"
+              value={formData.questionCount}
+              onChange={handleChange}
+              className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
+              required
+              min="1"
+              max="30"
+              style={{
+                backgroundColor: '#9333ea',
+                boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+              }}
+              autoComplete='off'
+            />
+            <input
+              type="number"
+              name="rewardPerScore"
+              placeholder="Reward Per Score"
+              value={formData.rewardPerScore}
+              onChange={handleChange}
+              className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
+              required
+              min="1"
+              style={{
+                backgroundColor: '#9333ea',
+                boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+              }}
+              autoComplete='off'
+            />
           </div>
-        </DialogContent>
-      </Dialog>
-    </span>
-  </section>
-);
+          <div className="flex items-center gap-[0.5rem] w-full">
+            <label htmlFor="pdf-upload" className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-center flex items-center justify-center text-white bg-matte-dark hover:bg-matte-light max-w-fit rounded-md cursor-pointer">
+              Choose Pdf
+            </label>
+            <input
+              id="pdf-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+              className="hidden"
+              required
+              ref={fileInputRef}
+            />
+            {pdfFile && (
+              <div className="flex items-center gap-[0.5rem]">
+                <PictureAsPdfIcon style={{ color: 'red' }} />
+                <span className="text-white">{pdfFile.name}</span>
+              </div>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="px-[0.5rem] py-[1.25rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Quiz'}
+          </button>
+        </form>
+        <Dialog open={open} onClose={(_, reason) => reason === 'backdropClick' ? null : handleClose} maxWidth="md" fullWidth >
+          <DialogContent>
+            <div className="flex flex-row gap-[2rem]">
+              <div className="flex flex-col items-center justify-center gap-[1rem]" ref={qrRef} style={{ flex: 1 }}>
+                <h2 className="text-[1.25rem] text-center text-black">Quiz ID: <span className='text-[1.5rem] text-violet font-bold'>{quizId}</span></h2>
+                <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
+                <TextField
+                  label="Quiz Link"
+                  value={`${baseUrl}/quiz/${quizId}`}
+                  InputProps={{
+                    readOnly: true,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleCopy}>
+                          <ContentCopyIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  fullWidth
+                />
+                <DialogActions>
+                  <IconButton onClick={handleDownload} sx={{ color: '#6b46c1' }}>
+                    <FileDownloadIcon />
+                  </IconButton>
+                  <Button onClick={handleClose} sx={{
+                    color: '#6b46c1'
+                  }} disabled={closeDisabled}>
+                    Close
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleStartQuiz}
+                    disabled={isPublic || loading || stoppedQuiz}
+                    sx={{
+                      backgroundColor: '#6b46c1',
+                    }}
+                  >
+                    Start Quiz
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleStopQuiz}
+                    disabled={!isPublic || loading}
+                    sx={{
+                      backgroundColor: '#6b46c1',
+                    }}
+                  >
+                    Stop Quiz
+                  </Button>
+                </DialogActions>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-[1rem]" style={{ flex: 1 }}>
+                <h2 className="text-[1.25rem] text-center text-black">Participants</h2>
+                <ul className="h-full w-full px-[1rem] flex flex-col gap-[0.5rem]" style={{ overflowY: 'scroll', scrollbarWidth: 'thin' }}>
+                  {participants.map((participant) => (
+                    <li key={participant.walletAddress} className="text-[1rem] text-black border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
+                      <span>
+                        {participant.participantName}
+                      </span>
+                      <span>
+                        {participant.score !== null ? participant.score : 'N/A'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </span>
+    </section>
+  );
 };
 
 export default PdfToQuiz;

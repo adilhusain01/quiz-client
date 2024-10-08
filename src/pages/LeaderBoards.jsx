@@ -85,16 +85,16 @@ const LeaderBoards = () => {
       >
        <span className='flex flex-col gap-[1rem]'>
        <h2 className='text-[1.75rem] text-center font-semibold text-white'>Quiz <span className='text-purple-400'>#{quiz.quizId}</span></h2>
-      <div className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white w-[40rem] gap-[2.5rem] rounded-md shadow-md">
+      <div className="m-auto p-[1.5rem] flex flex-col items-center justify-center bg-purple-800 w-[40rem] gap-[2.5rem] rounded-lg shadow-2xl">
         <div className='flex flex-row items-center justify-between w-full'>
-          <p className="text-[1.25rem] font-medium text-black">Questions: <span className='text-red-500'>{quiz.questions.length}</span></p>
-          <p className="text-[1.25rem] font-medium text-black">Status : <span className={`${quiz.isPublic ? 'text-green-500' : 'text-red-500'}`}>{quiz.isPublic ? 'Open' : 'Closed'}</span></p>
+          <p className="text-[1.25rem] text-white font-bold">Questions: <span className='text-red-500'>{quiz.questions.length}</span></p>
+          <p className="text-[1.25rem] text-white font-bold">Status : <span className={`${quiz.isPublic ? 'text-green-500' : 'text-red-500'}`}>{quiz.isPublic ? 'Open' : 'Closed'}</span></p>
         </div>
 
         <div className='flex flex-row items-center justify-between w-full'>
           <div>
-            <label htmlFor="sort" className="text-[1rem] text-black">Sort by: </label>
-            <select id="sort" value={sortOption} onChange={handleSortChange} className="px-[0.5rem] py-[0.25rem] text-[1rem] text-black border border-black rounded-md">
+            <label htmlFor="sort" className="text-[1rem] text-white font-bold">Sort by: </label>
+            <select id="sort" value={sortOption} onChange={handleSortChange} className="px-[0.5rem] py-[0.25rem] text-[1rem] text-white bg-matte-dark focus:outline-none rounded-md custom-select">
               <option value="name">Name</option>
               <option value="score">Score</option>
             </select>
@@ -105,7 +105,11 @@ const LeaderBoards = () => {
               placeholder="Search by name" 
               value={searchTerm} 
               onChange={handleSearchChange} 
-              className="px-[0.5rem] py-[0.25rem] text-[1rem] text-black border border-black rounded-md"
+              className="px-[0.75rem] py-[0.25rem] text-[1rem] text-white placeholder-white focus:outline-none rounded-md"
+              style={{
+                backgroundColor: '#9333ea',
+                boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+              }}
             />
             <button 
               onClick={handleSearch} 
@@ -118,7 +122,7 @@ const LeaderBoards = () => {
 
         <ul className="flex flex-col w-full gap-[0.5rem]">
           {sortedParticipants.map((participant) => (
-            <li key={participant.walletAddress} className="text-[1rem] text-black border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
+            <li key={participant.walletAddress} className="py-[0.25rem] text-[1rem] text-white border border-transparent border-b-gray-300 flex flex-row items-center justify-between">
               <span>
                 {participant.participantName}
               </span>

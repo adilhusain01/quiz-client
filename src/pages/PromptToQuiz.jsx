@@ -3,7 +3,7 @@ import { WalletContext } from '../context/WalletContext';
 import toast from 'react-hot-toast';
 import axios from '../api/axios';
 import { QRCodeSVG } from 'qrcode.react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, TextField, InputAdornment, CircularProgress } from '@mui/material';
+import { Dialog, DialogContent, DialogActions, Button, IconButton, TextField, InputAdornment, CircularProgress } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
@@ -21,6 +21,8 @@ const PromptToQuiz = () => {
   const [loading, setLoading] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [participants, setParticipants] = useState([]);
+  const [closeDisabled, setCloseDisabled] = useState(true);
+  const [stoppedQuiz, setStoppedQuiz] = useState(false);
   const qrRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
@@ -156,9 +158,12 @@ const PromptToQuiz = () => {
   };
 
   const handleStopQuiz = async () => {
+setStoppedQuiz(true);
+
     try {
-      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
+      await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false, isFinished: true });
       setIsPublic(false);
+      setCloseDisabled(false);
   
       if (typeof window.tronWeb !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
@@ -193,7 +198,7 @@ const PromptToQuiz = () => {
         setQuizIds(result[0]);
         setQuizQids(result[1]);
         // console.log("Result",result[0]);
-        toast.success('Quizzes loaded successfully');
+        // toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');
       }
@@ -246,6 +251,7 @@ const PromptToQuiz = () => {
               backgroundColor: '#9333ea',
               boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
             }}
+            autoComplete='off'
           />
         <div className='grid grid-cols-3 gap-[0.5rem]'>
 
@@ -257,10 +263,12 @@ const PromptToQuiz = () => {
             onChange={handleChange}
             className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
+            min="1"
             style={{
               backgroundColor: '#9333ea',
               boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
             }}
+            autoComplete='off'
           />
           <input
             type="number"
@@ -276,20 +284,22 @@ const PromptToQuiz = () => {
               backgroundColor: '#9333ea',
               boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
             }}
+            autoComplete='off'
           />
           <input
-            type="text"
+            type="number"
             name="rewardPerScore"
             placeholder="Reward Per Score"
             value={formData.rewardPerScore}
             onChange={handleChange}
             className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
-            pattern="^\d+(\.\d{1,2})?$"
+            min="1"
             style={{
               backgroundColor: '#9333ea',
               boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
             }}
+            autoComplete='off'
           />
           </div>
           <textarea
@@ -303,6 +313,7 @@ const PromptToQuiz = () => {
               backgroundColor: '#9333ea',
               boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
             }}
+            autoComplete='off'
           />
           <button
             type="submit"
@@ -312,12 +323,12 @@ const PromptToQuiz = () => {
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Quiz'}
           </button>
         </form>
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth >
+        <Dialog open={open} onClose={(_, reason) => reason === 'backdropClick' ? null : handleClose} maxWidth="md" fullWidth >
           <DialogContent>
             <div className="flex flex-row gap-[2rem]">
               <div className="flex flex-col items-center justify-center gap-[1rem]" ref={qrRef} style={{ flex: 1 }}>
                 <h2 className="text-[1.25rem] text-center text-black">Quiz ID: <span className='text-[1.5rem] text-violet font-bold'>{quizId}</span></h2>
-                <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
+                <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256}                />
                 <TextField
                   label="Quiz Link"
                   value={`${baseUrl}/quiz/${quizId}`}
@@ -341,13 +352,13 @@ const PromptToQuiz = () => {
                   </IconButton>
                   <Button onClick={handleClose} sx={{
                     color: '#6b46c1'
-                  }}>
+                  }} disabled={closeDisabled}>
                     Close
                   </Button>
                   <Button
                     variant="contained"
                     onClick={handleStartQuiz}
-                    disabled={isPublic || loading}
+                    disabled={isPublic || loading || stoppedQuiz}
                     sx={{
                       backgroundColor: '#6b46c1',
                     }}
