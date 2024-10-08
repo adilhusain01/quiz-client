@@ -38,7 +38,7 @@ const Quiz = () => {
             'Content-Type': 'application/json'
           }
         });
-        console.log(response.data);
+        // console.log(response.data);
         
         setQuiz(response.data);
         setLoading(false);
@@ -125,7 +125,7 @@ const Quiz = () => {
       });
   
       toast.success('Quiz submitted successfully to the API!');
-      console.log(response.data.score);
+      // console.log(response.data.score);
   
       // Load all quizzes first, ensuring it completes before proceeding
   
@@ -137,10 +137,10 @@ const Quiz = () => {
         const qid = response.data.quizId;
         
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
-        console.log("Quiz Index", quizIndex);
+        // console.log("Quiz Index", quizIndex);
   
         const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
-        console.log("Plus One Index", plusoneindex);
+        // console.log("Plus One Index", plusoneindex);
   
         const score = response.data.score * 1000000; // Adjust score as per contract needs
   
@@ -150,7 +150,7 @@ const Quiz = () => {
           score         // Pass the score from API
         ).send({ from: walletAddress });
   
-        console.log('Transaction ID:', tx);
+        // console.log('Transaction ID:', tx);
         toast.success('Quiz score submitted successfully to the smart contract!');
       } else {
         toast.error('TronLink not found. Please install TronLink.');
@@ -177,7 +177,7 @@ const Quiz = () => {
         // result will be an object with two arrays: quizIds and quizQids
         setQuizIds(result[0]);
         setQuizQids(result[1]);
-        console.log("Result",result[0]);
+        // console.log("Result",result[0]);
         toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');

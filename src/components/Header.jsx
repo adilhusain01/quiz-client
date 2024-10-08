@@ -15,7 +15,7 @@ const truncateAddress = (address) => {
   return (
     <nav className='px-[5rem] h-[5rem] flex flex-row items-center justify-between text-white bg-indigo'>
         <Link to={'/'} className='flex flex-row items-center justify-center gap-[0.25rem] cursor-pointer'>
-          <img src={Logo} alt="" className='h-auto w-full max-w-[3.75rem] object-cover'/>
+          <img src={Logo} alt="" className='h-auto w-full max-w-[3.5rem] object-cover'/>
           <h1 className='text-[2.25rem] font-bold'>Vibe</h1>
         </Link>
         <button

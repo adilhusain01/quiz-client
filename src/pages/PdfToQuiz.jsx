@@ -6,6 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, TextField, InputAdornment, CircularProgress } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 // import TronLink from 'tronlink-web-extension';
 
 const PdfToQuiz = () => {
@@ -113,7 +114,7 @@ const PdfToQuiz = () => {
           rewardPerScore
         ).send({ callValue: budget, from: walletAddress });
 
-        console.log('Transaction ID:', tx);
+        // console.log('Transaction ID:', tx);
         toast.success('Quiz successfully created.');
         loadAllQuizzes();
         // Reset form data after both API and smart contract submission
@@ -184,12 +185,12 @@ const PdfToQuiz = () => {
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
   
         const quizIndex = quizQids.indexOf(quizId);
-        console.log("Quiz Index",quizIndex);
+        // console.log("Quiz Index",quizIndex);
         const plusoneindex = quizIndex + 1;
-        console.log("Plus One Index",plusoneindex);
+        // console.log("Plus One Index",plusoneindex);
         const tx = await contract.endQuiz(plusoneindex).send({ from: walletAddress });
   
-        console.log('Transaction ID:', tx);
+        // console.log('Transaction ID:', tx);
       } else {
         toast.error("Failed to End Quiz");
       }
@@ -212,7 +213,7 @@ const PdfToQuiz = () => {
         // result will be an object with two arrays: quizIds and quizQids
         setQuizIds(result[0]);
         setQuizQids(result[1]);
-        console.log("Result",result[0]);
+        // console.log("Result",result[0]);
         toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');
@@ -250,9 +251,10 @@ return (
   >
     <span className='flex flex-col gap-[1rem]'>
       <h2 className='text-[3.125rem] text-center font-semibold text-white'>Pdf To Quiz</h2>
+
       <form
         onSubmit={handleSubmit}
-        className="m-auto p-[1rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.75rem] w-[45rem] rounded-md shadow-2xl"
+        className="m-auto p-[1.5rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.75rem] w-[45rem] rounded-lg shadow-2xl"
       >
         <input
           type="text"
@@ -300,7 +302,7 @@ return (
         <input
           type="text"
           name="rewardPerScore"
-          placeholder="Prize Per Score"
+          placeholder="Reward Per Score"
           value={formData.rewardPerScore}
           onChange={handleChange}
           className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
@@ -312,14 +314,26 @@ return (
           }}
         />
         </div>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-          className="px-[0.5rem] py-[1.5rem] text-[1.1rem] text-center text-black focus:outline-none w-full rounded-md"
-          required
-          ref={fileInputRef}
-        />
+        <div className="flex items-center gap-[0.5rem] w-full">
+          <label htmlFor="pdf-upload" className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-center flex items-center justify-center text-white bg-matte-dark hover:bg-matte-light max-w-fit rounded-md cursor-pointer">
+            Choose Pdf
+          </label>
+          <input
+            id="pdf-upload"
+            type="file"
+            accept="application/pdf"
+            onChange={handleFileChange}
+            className="hidden"
+            required
+            ref={fileInputRef}
+          />
+          {pdfFile && (
+            <div className="flex items-center gap-[0.5rem]">
+              <PictureAsPdfIcon style={{ color: 'red' }} />
+              <span className="text-white">{pdfFile.name}</span>
+            </div>
+          )}
+        </div>
         <button
           type="submit"
           className="px-[0.5rem] py-[1.25rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"

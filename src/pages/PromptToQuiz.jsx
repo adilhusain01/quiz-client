@@ -96,7 +96,7 @@ const PromptToQuiz = () => {
           rewardPerScore
         ).send({ callValue: budget, from: walletAddress });
   
-        console.log('Transaction ID:', tx);
+        // console.log('Transaction ID:', tx);
         toast.success('Quiz successfully created');
         loadAllQuizzes();
         // Reset form data after successful creation
@@ -165,12 +165,12 @@ const PromptToQuiz = () => {
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
   
         const quizIndex = quizQids.indexOf(quizId);
-        console.log("Quiz Index",quizIndex);
+        // console.log("Quiz Index",quizIndex);
         const plusoneindex = quizIndex + 1;
-        console.log("Plus One Index",plusoneindex);
+        // console.log("Plus One Index",plusoneindex);
         const tx = await contract.endQuiz(plusoneindex).send({ from: walletAddress });
   
-        console.log('Transaction ID:', tx);
+        // console.log('Transaction ID:', tx);
       } else {
         toast.error("Failed to End Quiz");
       }
@@ -192,7 +192,7 @@ const PromptToQuiz = () => {
         // result will be an object with two arrays: quizIds and quizQids
         setQuizIds(result[0]);
         setQuizQids(result[1]);
-        console.log("Result",result[0]);
+        // console.log("Result",result[0]);
         toast.success('Quizzes loaded successfully');
       } else {
         toast.error('Failed to load quizzes');
@@ -224,14 +224,15 @@ const PromptToQuiz = () => {
 
   return (
     <section
-      className="w-full flex justify-center items-center"
-      style={{ height: 'calc(100vh - 5rem)' }}
+    className="mt-[-5rem] w-full flex items-center justify-center"
+    style={{ height: 'calc(100vh - 5rem)' }}
     >
       <span className='flex flex-col gap-[1rem]'>
-        <h2 className='text-[1.75rem] text-center font-semibold text-white'>Prompt To Quiz</h2>
+      <h2 className='text-[3.125rem] text-center font-semibold text-white'>Prompt To Quiz</h2>
+
         <form
           onSubmit={handleSubmit}
-          className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white gap-[0.5rem] w-[20rem] rounded-md shadow-md"
+          className="m-auto p-[1.5rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.75rem] w-[45rem] rounded-lg shadow-2xl"
         >
           <input
             type="text"
@@ -239,28 +240,42 @@ const PromptToQuiz = () => {
             placeholder="Creator Name"
             value={formData.creatorName}
             onChange={handleChange}
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
+            className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
           />
+        <div className='grid grid-cols-3 gap-[0.5rem]'>
+
           <input
             type="number"
             name="numParticipants"
-            placeholder="Number of Participants"
+            placeholder="No. of Participants"
             value={formData.numParticipants}
             onChange={handleChange}
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
+            className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
           />
           <input
             type="number"
             name="questionCount"
-            placeholder="Number of Questions"
+            placeholder="No. of Questions"
             value={formData.questionCount}
             onChange={handleChange}
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
+            className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
             min="1"
             max="30"
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
           />
           <input
             type="text"
@@ -268,21 +283,30 @@ const PromptToQuiz = () => {
             placeholder="Reward Per Score"
             value={formData.rewardPerScore}
             onChange={handleChange}
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
+            className="px-[1rem] py-[1.5rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
             pattern="^\d+(\.\d{1,2})?$"
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
           />
+          </div>
           <textarea
             name="prompt"
-            placeholder="Topic"
+            placeholder="Topic of Quiz"
             value={formData.prompt}
             onChange={handleChange}
-            className="px-[0.5rem] py-[0.25rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md"
+            className="px-[1rem] py-[1rem] text-[1.1rem] text-white placeholder-white focus:outline-none w-full rounded-md"
             required
+            style={{
+              backgroundColor: '#9333ea',
+              boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+            }}
           />
           <button
             type="submit"
-            className="px-[0.5rem] py-[0.5rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
+            className="px-[0.5rem] py-[1.25rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md flex items-center justify-center"
             disabled={loading}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Create Quiz'}

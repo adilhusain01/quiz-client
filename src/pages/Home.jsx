@@ -65,13 +65,17 @@ const Home = () => {
        
         <section className='h-full max-h-fit w-full grid grid-cols-2'>
         <div className='flex flex-col items-center justify-center gap-[2.5rem]'>
-          <div className="p-[1rem] flex flex-col items-center justify-center bg-white gap-[0.5rem] w-[20rem] rounded-md shadow-md">
+          <div className="p-[1rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.5rem] w-[20rem] rounded-lg shadow-2xl">
             <input 
               type="text" 
               value={joinQuizCode} 
               onChange={(e) => setJoinQuizCode(e.target.value)} 
               placeholder="Enter Code" 
-              className="px-[0.5rem] py-[1.5rem] text-[1.1rem] text-center text-black border border-black focus:outline-none w-full rounded-md" 
+              className="px-[1em] py-[1.5rem] text-[1.1rem] text-center text-white placeholder-white focus:outline-none w-full rounded-md" 
+              style={{
+                backgroundColor: '#9333ea',
+                boxShadow: 'inset 10px 10px 20px #3b145e, inset -10px -10px 20px #eb52ff'
+              }}
             />
             <button 
               onClick={handleJoinQuiz} 
@@ -82,7 +86,7 @@ const Home = () => {
           </div>
         </div>
        
-        <div ref={dropdownRef} className="m-auto p-[1rem] flex flex-col items-center justify-center bg-white gap-[0.5rem] w-[20rem] rounded-md shadow-md relative">
+        <div ref={dropdownRef} className="m-auto p-[1rem] flex flex-col items-center justify-center bg-purple-800 gap-[0.5rem] w-[20rem] rounded-lg shadow-2xl relative">
           <button 
             onClick={toggleDropdown} 
             className="px-[0.5rem] py-[1rem] text-[1.1rem] text-white bg-matte-dark hover:bg-matte-light w-full rounded-md"
@@ -91,9 +95,9 @@ const Home = () => {
             <ArrowDropDownIcon />
           </button>
           {dropdownOpen && (
-            <div className="absolute top-full mt-2 w-full bg-white rounded-md shadow-md">
-              <Link to={'/pdfToQuiz'} className="block p-[1rem] text-[1.1rem] text-black hover:bg-gray-200 w-full rounded-md cursor-pointer">Pdf to Quiz</Link>
-              <Link to={'/promptToQuiz'} className="block p-[1rem] text-[1.1rem] text-black hover:bg-gray-200 w-full rounded-md cursor-pointer">Prompt to Quiz</Link>
+            <div className="absolute top-full mt-2 w-full bg-purple-800 rounded-md shadow-md">
+              <Link to={'/pdfToQuiz'} className="block p-[1rem] text-[1.1rem] text-white bg-purple-800 hover:bg-purple-900 w-full rounded-md cursor-pointer">Pdf to Quiz</Link>
+              <Link to={'/promptToQuiz'} className="block p-[1rem] text-[1.1rem] text-white bg-purple-800 hover:bg-purple-900 w-full rounded-md cursor-pointer">Prompt to Quiz</Link>
             </div>
           )}
         </div>
