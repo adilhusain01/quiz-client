@@ -22,7 +22,7 @@ const PromptToQuiz = () => {
   const [isPublic, setIsPublic] = useState(false);
   const [participants, setParticipants] = useState([]);
   const qrRef = useRef();
-  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
+  const CONTRACT_ADDRESS = 'TRwnBXXUiD3jRokv7KuoRE1d6UecZXv9js'
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,7 +105,8 @@ const PromptToQuiz = () => {
           questionCount: '',
           rewardPerScore: ''
         });
-  
+
+
         // Optionally, open modal or perform any other action
         setOpen(true);
       } else {

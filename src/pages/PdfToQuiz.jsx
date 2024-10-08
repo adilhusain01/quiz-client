@@ -24,7 +24,7 @@ const PdfToQuiz = () => {
   const [participants, setParticipants] = useState([]);
   const qrRef = useRef();
   const fileInputRef = useRef();
-  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
+  const CONTRACT_ADDRESS = 'TRwnBXXUiD3jRokv7KuoRE1d6UecZXv9js'
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -177,7 +177,7 @@ const PdfToQuiz = () => {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
       setIsPublic(false);
 
-      
+
       toast.success('Quiz has ended');
     } catch (error) {
       toast.error('Failed to end the quiz');

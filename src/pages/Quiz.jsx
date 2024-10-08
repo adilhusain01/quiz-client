@@ -20,7 +20,7 @@ const Quiz = () => {
   const [quizStarted, setQuizStarted] = useState(false);
   const navigate = useNavigate();
 
-  const CONTRACT_ADDRESS = 'TUGxDDicnoCEAVvQAXCv5nucEDnSneQL7z'
+  const CONTRACT_ADDRESS = 'TRwnBXXUiD3jRokv7KuoRE1d6UecZXv9js'
 
   useEffect(() => {
     const fetchQuiz = async () => {
