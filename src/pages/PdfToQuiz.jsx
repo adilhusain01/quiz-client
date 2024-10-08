@@ -22,8 +22,8 @@ const PdfToQuiz = () => {
   const [loading, setLoading] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [participants, setParticipants] = useState([]);
+  const [startDisabled, setStartDisabled] = useState(false);
   const [closeDisabled, setCloseDisabled] = useState(true);
-  const [stoppedQuiz, setStoppedQuiz] = useState(false);
   const qrRef = useRef();
   const fileInputRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
@@ -156,7 +156,6 @@ const PdfToQuiz = () => {
   };
 
   const handleStartQuiz = async () => {
-    setStoppedQuiz(false);
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: true });
       setIsPublic(true);
@@ -167,8 +166,7 @@ const PdfToQuiz = () => {
   };
 
   const handleStopQuiz = async () => {
-    setStoppedQuiz(true);
-
+setStartDisabled(true);
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false, isFinished: true });
       setIsPublic(false);
@@ -185,6 +183,7 @@ const PdfToQuiz = () => {
         toast.error("Failed to End Quiz");
       }
       toast.success('Quiz has ended');
+      setOpen(false);
     } catch (error) {
       toast.error('Failed to end the quiz');
     }
@@ -363,7 +362,7 @@ const PdfToQuiz = () => {
                   <Button
                     variant="contained"
                     onClick={handleStartQuiz}
-                    disabled={isPublic || loading || stoppedQuiz}
+                    disabled={isPublic || loading || startDisabled}
                     sx={{
                       backgroundColor: '#6b46c1',
                     }}
