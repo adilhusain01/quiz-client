@@ -112,6 +112,7 @@ const PromptToQuiz = () => {
 
 
         // Optionally, open modal or perform any other action
+        setLoading(false);
         setOpen(true);
       } else {
         toast.error('TronLink not found. Please install TronLink.');
@@ -148,6 +149,7 @@ const PromptToQuiz = () => {
   };
 
   const handleStartQuiz = async () => {
+    setStoppedQuiz(false);
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: true });
       setIsPublic(true);

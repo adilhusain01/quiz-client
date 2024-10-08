@@ -120,6 +120,7 @@ const PdfToQuiz = () => {
           fileInputRef.current.value = '';
         }
 
+        setLoading(false);
         setOpen(true);
       } else {
         toast.error('TronLink not found. Please install TronLink.');
