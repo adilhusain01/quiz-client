@@ -19,6 +19,8 @@ const Quiz = () => {
   const [timer, setTimer] = useState(30);
   const [quizStarted, setQuizStarted] = useState(false);
   const navigate = useNavigate();
+  const [quizIds, setQuizIds] = useState([]);
+  const [quizQids, setQuizQids] = useState([]);
 
   const CONTRACT_ADDRESS = 'TRwnBXXUiD3jRokv7KuoRE1d6UecZXv9js'
 
@@ -122,15 +124,21 @@ const Quiz = () => {
   
       console.log(response.data.score);
       toast.success('Quiz submitted successfully to the API!');
+      loadAllQuizzes();
   
       // After receiving the response from the API, interact with the smart contract
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
   
+        const qid = response.data.quizId;
+        const quizIndex = quizQids.indexOf(qid);
+        console.log("Quiz Index",quizIndex);
+        const plusoneindex = quizIndex + 1;
+        console.log("Plus One Index",plusoneindex);
         // Use the score received from the API response to join the quiz on the contract
         const tx = await contract.joinQuiz(
-          1,  // Assuming '1' is the quiz ID or use the correct ID from your contract
+          plusoneindex,  // Assuming '1' is the quiz ID or use the correct ID from your contract
           response.data.score  // Pass the score from the API
         ).send({ from: walletAddress });
   
@@ -148,6 +156,29 @@ const Quiz = () => {
     }
   };
   
+  const loadAllQuizzes = async () => {
+    try {
+      if (typeof window.tronLink !== 'undefined') {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+
+        // Call the getAllQuizzes function
+        const result = await contract.getAllQuizzes().call();
+
+        // result will be an object with two arrays: quizIds and quizQids
+        setQuizIds(result[0]);
+        setQuizQids(result[1]);
+        console.log("Result",result[0]);
+        toast.success('Quizzes loaded successfully');
+      } else {
+        toast.error('Failed to load quizzes');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load quizzes');
+    }
+  }
+
 
   const handleNameSubmit = () => {
     if (!participantName) {

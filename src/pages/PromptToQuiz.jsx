@@ -22,6 +22,8 @@ const PromptToQuiz = () => {
   const [isPublic, setIsPublic] = useState(false);
   const [participants, setParticipants] = useState([]);
   const qrRef = useRef();
+  const [quizIds, setQuizIds] = useState([]);
+  const [quizQids, setQuizQids] = useState([]);
   const CONTRACT_ADDRESS = 'TRwnBXXUiD3jRokv7KuoRE1d6UecZXv9js'
 
   const handleChange = (e) => {
@@ -96,7 +98,7 @@ const PromptToQuiz = () => {
   
         console.log('Transaction ID:', tx);
         toast.success('Quiz successfully created');
-  
+        loadAllQuizzes();
         // Reset form data after successful creation
         setFormData({
           creatorName: '',
@@ -157,11 +159,49 @@ const PromptToQuiz = () => {
     try {
       await axios.put(`/api/quiz/update/${quizId}`, { isPublic: false });
       setIsPublic(false);
+  
+      if (typeof window.tronWeb !== 'undefined') {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  
+        const quizIndex = quizQids.indexOf(quizId);
+        console.log("Quiz Index",quizIndex);
+        const plusoneindex = quizIndex + 1;
+        console.log("Plus One Index",plusoneindex);
+        const tx = await contract.endQuiz(plusoneindex).send({ from: walletAddress });
+  
+        console.log('Transaction ID:', tx);
+      } else {
+        toast.error("Failed to End Quiz");
+      }
       toast.success('Quiz has ended');
     } catch (error) {
       toast.error('Failed to end the quiz');
     }
   };
+
+  const loadAllQuizzes = async () => {
+    try {
+      if (typeof window.tronLink !== 'undefined') {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+
+        // Call the getAllQuizzes function
+        const result = await contract.getAllQuizzes().call();
+
+        // result will be an object with two arrays: quizIds and quizQids
+        setQuizIds(result[0]);
+        setQuizQids(result[1]);
+        console.log("Result",result[0]);
+        toast.success('Quizzes loaded successfully');
+      } else {
+        toast.error('Failed to load quizzes');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load quizzes');
+    }
+  }
 
   const fetchParticipants = async () => {
     try {
