@@ -1,0 +1,2 @@
+          {/* <h2 className='px-[20rem] text-[7.5rem] font-bold text-white'>Quiz with<span className='mx-[2rem] text-purple-600'>{'Web <3!'}</span></h2> */}
+            <h2 className='ml-[16rem] text-[4.5rem] text-left text-white font-bold tracking-wider'>Vibe with Web3</h2>
