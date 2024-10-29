@@ -8,12 +8,13 @@ const PdfToQuiz = lazy(() => import('./pages/PdfToQuiz'));
 const PromptToQuiz = lazy(() => import('./pages/PromptToQuiz'));
 const LeaderBoards = lazy(() => import('./pages/LeaderBoards')) 
 const Quiz = lazy(() => import('./pages/Quiz')) 
+import LoadingSpinner from './components/LoadingSpinner';
 
 const App = () => {
   return (
     <WalletProvider>
       <Router>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route element={<Layout />}>
               <Route path='/' element={<Home />} />
