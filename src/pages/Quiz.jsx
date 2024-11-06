@@ -450,6 +450,7 @@ const Quiz = () => {
         }
       });
       toast.success('Joined quiz successfully!');
+      await loadAllQuizzes();
       setNameDialogOpen(false);
       setQuizStarted(true); // Start the quiz and timer
     } catch (err) {
