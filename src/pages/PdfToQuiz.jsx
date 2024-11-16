@@ -44,7 +44,7 @@ const PdfToQuiz = () => {
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
   const [quizCreated, setQuizCreated] = useState(false);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -128,8 +128,8 @@ const PdfToQuiz = () => {
           .toBigNumber(tronWeb.toSun(totalCost))
           .integerValue();
 
-        await contract
-          .createQuiz(quizId, questionCount, rewardPerScore)
+        const tx = await contract
+          .createQuiz(quizId, questionCount, rewardPerScore, creatorName)
           .send({ callValue: budget, from: walletAddress });
 
         toast.success('Quiz successfully created.');

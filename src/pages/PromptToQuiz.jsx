@@ -36,7 +36,7 @@ const PromptToQuiz = () => {
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
   const [quizCreated, setQuizCreated] = useState(false);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
   // Keep all your existing handlers and effects
@@ -129,7 +129,8 @@ const PromptToQuiz = () => {
           .createQuiz(
             quizId, // Use the quizId received from the API
             questionCount,
-            rewardPerScore
+            rewardPerScore,
+            creatorName
           )
           .send({ callValue: budget, from: walletAddress });
 
@@ -218,6 +219,7 @@ const PromptToQuiz = () => {
         // console.log("Quiz Index",quizIndex);
         const plusoneindex = quizIndex + 1;
         // console.log("Plus One Index",plusoneindex);
+        console.log(walletAddress);
         await contract.endQuiz(plusoneindex).send({ from: walletAddress });
 
         // console.log('Transaction ID:', tx);
@@ -359,7 +361,7 @@ const PromptToQuiz = () => {
                     onChange={handleChange}
                     className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Reward per score'
-                    min='0.0001'
+                    min='1'
                     required
                   />
                 </div>

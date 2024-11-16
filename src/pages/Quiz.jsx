@@ -33,8 +33,9 @@ const Quiz = () => {
   const [quizQids, setQuizQids] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [metadata, setMetadata] = useState[{}]
 
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -177,13 +178,15 @@ const Quiz = () => {
         const qid = response.data.quizId;
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
         const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
+        console.log("Plus one index:  ",plusoneindex)
         const score = response.data.score * 1000000; // Adjust score as per contract needs
 
         // Use the score from the API response to join the quiz on the contract
         await contract
           .joinQuiz(
             plusoneindex, // Use the correct quiz index
-            score // Pass the score from API
+            score,
+            participantName // Pass the score from API
           )
           .send({ from: walletAddress });
 
@@ -191,6 +194,10 @@ const Quiz = () => {
           'Quiz score submitted successfully to the smart contract!'
         );
         navigate(`/leaderboards/${id}`);
+        // const responsemetadata = await fetchNFTMetadata(1);
+        // setMetadata(responsemetadata);
+        // console.log(responsemetadata)
+
       } else {
         toast.error('TronLink not found. Please install TronLink.');
         setIsSubmitting(false);
@@ -202,6 +209,33 @@ const Quiz = () => {
       );
       console.log(err);
       setIsSubmitting(false);
+    }
+  };
+
+  const fetchNFTMetadata = async (nftId) => {
+    try {
+      if (typeof window.tronLink !== "undefined") {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  
+        // Fetch the NFT data by calling the `nfts` function
+        const nftData = await contract.nfts(nftId).call();
+  
+        // Extract the metadataURI
+        const metadataURI = nftData.metadataURI;
+  
+        // Parse the JSON metadataURI
+        const metadata = JSON.parse(metadataURI);
+  
+        return metadata; // Return the parsed metadata object
+      } else {
+        toast.error("TronLink wallet not found!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Failed to fetch NFT metadata:", error);
+      toast.error("Error fetching NFT metadata");
+      return null;
     }
   };
 
