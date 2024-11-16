@@ -176,7 +176,7 @@ const VideoToQuiz = () => {
           .integerValue();
 
         await contract
-          .createQuiz(quizId, questionCount, rewardPerScore)
+          .createQuiz(quizId, questionCount, rewardPerScore, creatorName)
           .send({ callValue: budget, from: walletAddress });
         ('contract');
 
