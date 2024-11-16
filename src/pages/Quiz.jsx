@@ -24,7 +24,7 @@
 //   const [quizQids, setQuizQids] = useState([]);
 //   const [error, setError] = useState('');
 
-//   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN'
+//   const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M'
 
 //   useEffect(() => {
 //     const fetchQuiz = async () => {
@@ -365,7 +365,7 @@ const Quiz = () => {
   const [quizQids, setQuizQids] = useState([]);
   const [error, setError] = useState('');
 
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN'
+  const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M'
 
   useEffect(() => {
     const fetchQuiz = async () => {

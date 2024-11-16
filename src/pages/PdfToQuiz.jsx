@@ -28,7 +28,7 @@
 //   const fileInputRef = useRef();
 //   const [quizIds, setQuizIds] = useState([]);
 //   const [quizQids, setQuizQids] = useState([]);
-//   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+//   const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M';
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
@@ -438,7 +438,7 @@ const PdfToQuiz = () => {
   const fileInputRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M';
 
   const handleChange = (e) => {
     const { name, value } = e.target;

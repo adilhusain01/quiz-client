@@ -26,7 +26,7 @@
 //   const qrRef = useRef();
 //   const [quizIds, setQuizIds] = useState([]);
 //   const [quizQids, setQuizQids] = useState([]);
-//   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN'
+//   const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M'
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
@@ -431,7 +431,7 @@ const PromptToQuiz = () => {
   const qrRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TM7H8iptxPr9xGLVKPr5Yuks3MrdSdK78M';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
   // Keep all your existing handlers and effects
