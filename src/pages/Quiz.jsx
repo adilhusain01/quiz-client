@@ -34,7 +34,7 @@ const Quiz = () => {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const CONTRACT_ADDRESS = 'TTHdtxrsN5hdRZTj6aD6VoEyr1Tc5Atowh';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -176,9 +176,8 @@ const Quiz = () => {
 
         const qid = response.data.quizId;
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
-        console.log("quiz index: ", quizIndex)
-        const plusoneindex = quizIndex; // Assuming quizIndex starts at 0
-        console.log("Plus one index: ",plusoneindex)
+        const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
+        console.log("Plus one index:  ",plusoneindex)
         const score = response.data.score * 1000000; // Adjust score as per contract needs
 
         // Use the score from the API response to join the quiz on the contract

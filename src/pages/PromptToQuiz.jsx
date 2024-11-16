@@ -36,7 +36,7 @@ const PromptToQuiz = () => {
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
 
-  const CONTRACT_ADDRESS = 'TTHdtxrsN5hdRZTj6aD6VoEyr1Tc5Atowh';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
   // Keep all your existing handlers and effects
@@ -214,7 +214,7 @@ const PromptToQuiz = () => {
 
         const quizIndex = quizQids.indexOf(quizId);
         // console.log("Quiz Index",quizIndex);
-        const plusoneindex = quizIndex;
+        const plusoneindex = quizIndex + 1;
         // console.log("Plus One Index",plusoneindex);
         console.log(walletAddress)
         await contract.endQuiz(plusoneindex).send({ from: walletAddress });

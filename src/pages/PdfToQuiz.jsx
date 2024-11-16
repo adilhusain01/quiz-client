@@ -44,7 +44,7 @@ const PdfToQuiz = () => {
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
 
-  const CONTRACT_ADDRESS = 'TTHdtxrsN5hdRZTj6aD6VoEyr1Tc5Atowh';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
