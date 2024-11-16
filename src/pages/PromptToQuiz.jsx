@@ -35,6 +35,7 @@ const PromptToQuiz = () => {
   const qrRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
+  const [quizCreated, setQuizCreated] = useState(false);
   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
 
@@ -92,6 +93,7 @@ const PromptToQuiz = () => {
         rewardPerScore,
         creatorWallet: walletAddress,
         totalCost,
+        isPublic: false,
       };
 
       setLoading(true);
@@ -105,6 +107,8 @@ const PromptToQuiz = () => {
           },
         }
       );
+
+      setQuizCreated(true);
 
       // Set quiz ID from API response
       const quizId = response.data.quizId;
@@ -225,6 +229,7 @@ const PromptToQuiz = () => {
       setStartDisabled(false);
       setIsPublic(false);
       setCloseDisabled(true);
+      setQuizCreated(false);
     } catch (error) {
       toast.error('Failed to end the quiz');
       console.log(error);
@@ -264,12 +269,12 @@ const PromptToQuiz = () => {
   };
 
   useEffect(() => {
-    if (quizId) {
+    if (quizCreated && quizId) {
       fetchParticipants();
       const interval = setInterval(fetchParticipants, 1000);
       return () => clearInterval(interval);
     }
-  }, [quizId]);
+  }, [quizId, quizCreated]);
 
   return (
     <div
@@ -278,19 +283,15 @@ const PromptToQuiz = () => {
     >
       <div className='max-w-4xl mx-auto'>
         <div className='text-center space-y-4 mb-8'>
-          <h1 className='text-4xl md:text-5xl font-bold text-white'>
-            Create Quiz from
+          <h1 className='text-2xl md:text-5xl font-bold text-white'>
+            Create Quiz from &nbsp;
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400'>
-              {' '}
-              Prompt{' '}
+              Prompt
             </span>
           </h1>
-          {/* <p className="text-lg text-red-100">
-            Generate an AI-powered quiz instantly from your topic description
-          </p> */}
         </div>
 
-        <form onSubmit={handleSubmit} className='space-y-6'>
+        <form onSubmit={handleSubmit} className='space-y-6 text-sm md:text-md'>
           <div className='bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-xl'>
             {/* Creator Name Input */}
             <div className='space-y-6'>
@@ -303,7 +304,7 @@ const PromptToQuiz = () => {
                   name='creatorName'
                   value={formData.creatorName}
                   onChange={handleChange}
-                  className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                  className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                   placeholder='Enter your name'
                   required
                 />
@@ -321,7 +322,7 @@ const PromptToQuiz = () => {
                     name='numParticipants'
                     value={formData.numParticipants}
                     onChange={handleChange}
-                    className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Number of participants'
                     min='1'
                     required
@@ -338,7 +339,7 @@ const PromptToQuiz = () => {
                     name='questionCount'
                     value={formData.questionCount}
                     onChange={handleChange}
-                    className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Number of questions'
                     min='1'
                     max='30'
@@ -356,7 +357,7 @@ const PromptToQuiz = () => {
                     name='rewardPerScore'
                     value={formData.rewardPerScore}
                     onChange={handleChange}
-                    className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Reward per score'
                     min='0.0001'
                     required
@@ -374,7 +375,7 @@ const PromptToQuiz = () => {
                   name='prompt'
                   value={formData.prompt}
                   onChange={handleChange}
-                  className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[100px]'
+                  className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[100px]'
                   placeholder='Describe your quiz topic in detail...'
                   required
                 />
@@ -384,7 +385,7 @@ const PromptToQuiz = () => {
               <button
                 type='submit'
                 disabled={loading}
-                className='w-full px-6 py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50'
+                className='w-full px-6 py-3 md:py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg md:rounded-xl text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50'
               >
                 {loading ? (
                   <CircularProgress size={24} color='inherit' />

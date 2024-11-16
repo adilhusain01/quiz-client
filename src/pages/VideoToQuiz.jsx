@@ -13,25 +13,17 @@ import {
   InputAdornment,
   CircularProgress,
 } from '@mui/material';
-import {
-  Download,
-  Copy,
-  FileText,
-  Users,
-  HelpCircle,
-  Trophy,
-  Upload,
-} from 'lucide-react';
+import { Download, Copy, Globe, Users, HelpCircle, Trophy } from 'lucide-react';
 
-const PdfToQuiz = () => {
+const VideoToQuiz = () => {
   const { walletAddress } = useContext(WalletContext);
   const [formData, setFormData] = useState({
     creatorName: '',
+    ytVideoUrl: '',
     numParticipants: '',
     questionCount: '',
     rewardPerScore: '',
   });
-  const [pdfFile, setPdfFile] = useState(null);
   const [quizId, setQuizId] = useState(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,11 +32,11 @@ const PdfToQuiz = () => {
   const [startDisabled, setStartDisabled] = useState(false);
   const [closeDisabled, setCloseDisabled] = useState(true);
   const qrRef = useRef();
-  const fileInputRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const [quizCreated, setQuizCreated] = useState(false);
   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const baseUrl = import.meta.env.VITE_CLIENT_URI;
+  const [quizCreated, setQuizCreated] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,14 +46,54 @@ const PdfToQuiz = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type !== 'application/pdf') {
-      toast.error('Please select a valid PDF file');
-      setPdfFile(null);
-      return;
+  const validateYouTubeUrl = (url) => {
+    if (!url) return { isValid: false, error: 'URL is required' };
+
+    try {
+      const parsedUrl = new URL(url);
+
+      // Check if the domain is youtube.com or youtu.be
+      const validDomains = ['youtube.com', 'youtu.be', 'www.youtube.com'];
+      if (!validDomains.some((domain) => parsedUrl.hostname === domain)) {
+        return { isValid: false, error: 'Not a valid YouTube URL' };
+      }
+
+      // Handle youtube.com URLs
+      if (parsedUrl.hostname.includes('youtube.com')) {
+        // Regular video URL
+        if (parsedUrl.pathname === '/watch') {
+          const videoId = parsedUrl.searchParams.get('v');
+          if (!videoId) {
+            return { isValid: false, error: 'Invalid YouTube video ID' };
+          }
+          if (videoId.length !== 11) {
+            return { isValid: false, error: 'Invalid YouTube video ID length' };
+          }
+          return { isValid: true, videoId };
+        }
+        // Short form URL
+        if (parsedUrl.pathname.startsWith('/shorts/')) {
+          const videoId = parsedUrl.pathname.slice(8);
+          if (!videoId || videoId.length !== 11) {
+            return { isValid: false, error: 'Invalid YouTube shorts ID' };
+          }
+          return { isValid: true, videoId };
+        }
+      }
+
+      // Handle youtu.be URLs
+      if (parsedUrl.hostname === 'youtu.be') {
+        const videoId = parsedUrl.pathname.slice(1);
+        if (!videoId || videoId.length !== 11) {
+          return { isValid: false, error: 'Invalid YouTube video ID' };
+        }
+        return { isValid: true, videoId };
+      }
+
+      return { isValid: false, error: 'Invalid YouTube URL format' };
+    } catch (error) {
+      return { isValid: false, error: 'Invalid URL format' };
     }
-    setPdfFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -72,56 +104,71 @@ const PdfToQuiz = () => {
       return;
     }
 
-    const { creatorName, numParticipants, questionCount, rewardPerScore } =
-      formData;
+    const {
+      creatorName,
+      ytVideoUrl,
+      numParticipants,
+      questionCount,
+      rewardPerScore,
+    } = formData;
 
     if (
       !creatorName ||
+      !ytVideoUrl ||
       !numParticipants ||
       !questionCount ||
-      !rewardPerScore ||
-      !pdfFile
+      !rewardPerScore
     ) {
       toast.error('All fields are required');
       return;
     }
+
     if (questionCount > 30) {
       toast.error('Question count cannot be more than 30');
       return;
     }
-    if (numParticipants < 0 || questionCount < 0 || rewardPerScore < 0) {
-      toast.error('Numbers cannot be negative');
+
+    // Validate URL format
+    const urlValidation = validateYouTubeUrl(ytVideoUrl);
+    if (!urlValidation.isValid) {
+      toast.error(urlValidation.error);
       return;
     }
 
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
 
     try {
-      const dataToSubmit = new FormData();
-      dataToSubmit.append('creatorName', creatorName);
-      dataToSubmit.append('creatorWallet', walletAddress);
-      dataToSubmit.append('numParticipants', numParticipants);
-      dataToSubmit.append('pdf', pdfFile);
-      dataToSubmit.append('questionCount', questionCount);
-      dataToSubmit.append('rewardPerScore', rewardPerScore);
-      dataToSubmit.append('totalCost', totalCost);
-      dataToSubmit.append('isPublic', false);
+      const dataToSubmit = {
+        creatorName,
+        ytVideoUrl,
+        numParticipants,
+        questionCount,
+        rewardPerScore,
+        creatorWallet: walletAddress,
+        totalCost,
+        isPublic: false,
+      };
 
       setLoading(true);
 
-      const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        `/api/quiz/create/video`,
+        dataToSubmit,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       setQuizCreated(true);
 
       const quizId = response.data.quizId;
       setQuizId(quizId);
 
-      if (typeof window.tronWeb !== 'undefined') {
+      if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
+
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
 
         const budget = tronWeb
@@ -131,20 +178,18 @@ const PdfToQuiz = () => {
         await contract
           .createQuiz(quizId, questionCount, rewardPerScore)
           .send({ callValue: budget, from: walletAddress });
+        ('contract');
 
-        toast.success('Quiz successfully created.');
+        toast.success('Quiz successfully created');
         loadAllQuizzes();
 
         setFormData({
           creatorName: '',
+          ytVideoUrl: '',
           numParticipants: '',
           questionCount: '',
           rewardPerScore: '',
         });
-        setPdfFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
 
         setLoading(false);
         setOpen(true);
@@ -217,16 +262,15 @@ const PdfToQuiz = () => {
         const quizIndex = quizQids.indexOf(quizId);
         const plusoneindex = quizIndex + 1;
         await contract.endQuiz(plusoneindex).send({ from: walletAddress });
-
-        toast.success('Quiz has ended');
-        setOpen(false);
-        setStartDisabled(false);
-        setIsPublic(false);
-        setCloseDisabled(true);
-        setQuizCreated(false);
       } else {
         toast.error('Failed to End Quiz');
       }
+      toast.success('Quiz has ended');
+      setOpen(false);
+      setStartDisabled(false);
+      setIsPublic(false);
+      setCloseDisabled(true);
+      setQuizCreated(false);
     } catch (error) {
       toast.error('Failed to end the quiz');
       console.log(error);
@@ -238,17 +282,15 @@ const PdfToQuiz = () => {
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-
         const result = await contract.getAllQuizzes().call();
-
         setQuizIds(result[0]);
         setQuizQids(result[1]);
       } else {
         toast.error('Failed to load quizzes');
       }
     } catch (error) {
-      console.error(error);
       toast.error('Failed to load quizzes');
+      console.error(error);
     }
   };
 
@@ -269,8 +311,6 @@ const PdfToQuiz = () => {
     }
   }, [quizId, quizCreated]);
 
-  const baseUrl = import.meta.env.VITE_CLIENT_URI;
-
   return (
     <div
       className='flex items-center justify-center'
@@ -279,10 +319,9 @@ const PdfToQuiz = () => {
       <div className='max-w-4xl mx-auto'>
         <div className='text-center space-y-4 mb-8'>
           <h1 className='text-2xl md:text-5xl font-bold text-white'>
-            Create Quiz from
+            Create Quiz from &nbsp;
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400'>
-              {' '}
-              PDF{' '}
+              Youtube Video
             </span>
           </h1>
         </div>
@@ -290,7 +329,6 @@ const PdfToQuiz = () => {
         <form onSubmit={handleSubmit} className='space-y-6 text-sm md:text-md'>
           <div className='bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-xl'>
             <div className='space-y-6'>
-              {/* Creator Name Input */}
               <div className='space-y-2'>
                 <label className='text-white text-sm font-medium'>
                   Creator Name
@@ -300,13 +338,12 @@ const PdfToQuiz = () => {
                   name='creatorName'
                   value={formData.creatorName}
                   onChange={handleChange}
-                  className='w-full px-4 py-2 md:py-3  bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                  className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                   placeholder='Enter your name'
                   required
                 />
               </div>
 
-              {/* Grid for numeric inputs */}
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 <div className='space-y-2'>
                   <label className='text-white text-sm font-medium flex items-center gap-2'>
@@ -355,39 +392,28 @@ const PdfToQuiz = () => {
                     onChange={handleChange}
                     className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Reward per score'
-                    min='0.0001'
+                    min='1'
                     required
                   />
                 </div>
               </div>
 
-              {/* PDF Upload Section */}
               <div className='space-y-2'>
                 <label className='text-white text-sm font-medium flex items-center gap-2'>
-                  <FileText size={16} />
-                  PDF Document
+                  <Globe size={16} />
+                  Youtube Video URL
                 </label>
-                <div className='relative'>
-                  <input
-                    id='pdf-upload'
-                    type='file'
-                    accept='application/pdf'
-                    onChange={handleFileChange}
-                    className='hidden'
-                    required
-                    ref={fileInputRef}
-                  />
-                  <label
-                    htmlFor='pdf-upload'
-                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white flex items-center justify-center gap-2 cursor-pointer hover:bg-white/20 transition-colors'
-                  >
-                    <Upload size={20} />
-                    {pdfFile ? pdfFile.name : 'Choose PDF File'}
-                  </label>
-                </div>
+                <input
+                  type='url'
+                  name='ytVideoUrl'
+                  value={formData.ytVideoUrl}
+                  onChange={handleChange}
+                  className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                  placeholder='e.g., https://www.youtube.com/watch?v=gmaKoSjL0BU'
+                  required
+                />
               </div>
 
-              {/* Submit Button */}
               <button
                 type='submit'
                 disabled={loading}
@@ -397,7 +423,7 @@ const PdfToQuiz = () => {
                   <CircularProgress size={24} color='inherit' />
                 ) : (
                   <>
-                    <FileText size={20} />
+                    <Globe size={20} />
                     Generate Quiz
                   </>
                 )}
@@ -406,7 +432,6 @@ const PdfToQuiz = () => {
           </div>
         </form>
 
-        {/* Dialog */}
         <Dialog
           open={open}
           onClose={(_, reason) =>
@@ -422,12 +447,11 @@ const PdfToQuiz = () => {
             },
           }}
         >
-          <DialogContent style={{ backgroundColor: '#7f1d1d' }}>
+          <DialogContent>
             <div className='grid md:grid-cols-2 gap-8'>
-              {/* QR Code Section */}
               <div className='flex flex-col items-center gap-6' ref={qrRef}>
                 <h2 className='text-2xl font-bold text-white'>
-                  Quiz ID: <span className='text-red-400'>#{quizId}</span>
+                  Quiz ID: <span className='text-red-400'>{quizId}</span>
                 </h2>
                 <div className='bg-white p-4 rounded-xl'>
                   <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
@@ -454,7 +478,6 @@ const PdfToQuiz = () => {
                 />
               </div>
 
-              {/* Participants Section */}
               <div className='space-y-4'>
                 <h2 className='text-2xl font-bold text-white text-center'>
                   Participants
@@ -476,10 +499,7 @@ const PdfToQuiz = () => {
             </div>
           </DialogContent>
 
-          <DialogActions
-            className='p-4 bg-white/5'
-            style={{ backgroundColor: '#7f1d1d' }}
-          >
+          <DialogActions className='p-4 bg-white/5'>
             <IconButton onClick={handleDownload} className='text-red-400'>
               <Download size={20} style={{ color: 'white' }} />
             </IconButton>
@@ -513,4 +533,4 @@ const PdfToQuiz = () => {
   );
 };
 
-export default PdfToQuiz;
+export default VideoToQuiz;

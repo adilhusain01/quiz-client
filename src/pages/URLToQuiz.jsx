@@ -13,25 +13,17 @@ import {
   InputAdornment,
   CircularProgress,
 } from '@mui/material';
-import {
-  Download,
-  Copy,
-  FileText,
-  Users,
-  HelpCircle,
-  Trophy,
-  Upload,
-} from 'lucide-react';
+import { Download, Copy, Globe, Users, HelpCircle, Trophy } from 'lucide-react';
 
-const PdfToQuiz = () => {
+const URLToQuiz = () => {
   const { walletAddress } = useContext(WalletContext);
   const [formData, setFormData] = useState({
     creatorName: '',
+    websiteUrl: '',
     numParticipants: '',
     questionCount: '',
     rewardPerScore: '',
   });
-  const [pdfFile, setPdfFile] = useState(null);
   const [quizId, setQuizId] = useState(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,11 +32,11 @@ const PdfToQuiz = () => {
   const [startDisabled, setStartDisabled] = useState(false);
   const [closeDisabled, setCloseDisabled] = useState(true);
   const qrRef = useRef();
-  const fileInputRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const [quizCreated, setQuizCreated] = useState(false);
   const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const baseUrl = import.meta.env.VITE_CLIENT_URI;
+  const [quizCreated, setQuizCreated] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,14 +46,69 @@ const PdfToQuiz = () => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type !== 'application/pdf') {
-      toast.error('Please select a valid PDF file');
-      setPdfFile(null);
-      return;
+  const validateWebsiteUrl = async (url) => {
+    if (!url) return { isValid: false, error: 'URL is required' };
+
+    try {
+      const parsedUrl = new URL(url);
+
+      // Check for valid protocol
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return { isValid: false, error: 'URL must use HTTP or HTTPS protocol' };
+      }
+
+      // Check for common file extensions that wouldn't work for quizzes
+      const invalidExtensions = [
+        '.pdf',
+        '.jpg',
+        '.jpeg',
+        '.png',
+        '.gif',
+        '.zip',
+        '.doc',
+        '.docx',
+      ];
+      if (
+        invalidExtensions.some((ext) =>
+          parsedUrl.pathname.toLowerCase().endsWith(ext)
+        )
+      ) {
+        return { isValid: false, error: 'Direct file links are not supported' };
+      }
+
+      // Validate URL accessibility and content type
+      try {
+        setLoading(true);
+        const response = await axios.post('/api/validate-url', {
+          url: parsedUrl.href,
+        });
+        setLoading(false);
+
+        if (!response.data.isAccessible) {
+          return {
+            isValid: false,
+            error: 'Website is not accessible. Please check the URL',
+          };
+        }
+
+        if (!response.data.isValidContent) {
+          return {
+            isValid: false,
+            error: 'Website content is not suitable for quiz generation',
+          };
+        }
+
+        return { isValid: true, normalizedUrl: parsedUrl.href };
+      } catch (error) {
+        setLoading(false);
+        return {
+          isValid: false,
+          error: 'Unable to access the website. Please check the URL',
+        };
+      }
+    } catch (error) {
+      return { isValid: false, error: 'Invalid URL format' };
     }
-    setPdfFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -72,46 +119,56 @@ const PdfToQuiz = () => {
       return;
     }
 
-    const { creatorName, numParticipants, questionCount, rewardPerScore } =
-      formData;
+    const {
+      creatorName,
+      websiteUrl,
+      numParticipants,
+      questionCount,
+      rewardPerScore,
+    } = formData;
 
     if (
       !creatorName ||
+      !websiteUrl ||
       !numParticipants ||
       !questionCount ||
-      !rewardPerScore ||
-      !pdfFile
+      !rewardPerScore
     ) {
       toast.error('All fields are required');
       return;
     }
+
     if (questionCount > 30) {
       toast.error('Question count cannot be more than 30');
       return;
     }
-    if (numParticipants < 0 || questionCount < 0 || rewardPerScore < 0) {
-      toast.error('Numbers cannot be negative');
+
+    // Validate URL format
+    const urlValidation = await validateWebsiteUrl(websiteUrl);
+    if (!urlValidation.isValid) {
+      toast.error(urlValidation.error);
       return;
     }
 
     const totalCost = rewardPerScore * numParticipants * questionCount * 1.1;
 
     try {
-      const dataToSubmit = new FormData();
-      dataToSubmit.append('creatorName', creatorName);
-      dataToSubmit.append('creatorWallet', walletAddress);
-      dataToSubmit.append('numParticipants', numParticipants);
-      dataToSubmit.append('pdf', pdfFile);
-      dataToSubmit.append('questionCount', questionCount);
-      dataToSubmit.append('rewardPerScore', rewardPerScore);
-      dataToSubmit.append('totalCost', totalCost);
-      dataToSubmit.append('isPublic', false);
+      const dataToSubmit = {
+        creatorName,
+        websiteUrl,
+        numParticipants,
+        questionCount,
+        rewardPerScore,
+        creatorWallet: walletAddress,
+        totalCost,
+        isPublic: false,
+      };
 
       setLoading(true);
 
-      const response = await axios.post(`/api/quiz/create/pdf`, dataToSubmit, {
+      const response = await axios.post(`/api/quiz/create/url`, dataToSubmit, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
       });
 
@@ -120,8 +177,9 @@ const PdfToQuiz = () => {
       const quizId = response.data.quizId;
       setQuizId(quizId);
 
-      if (typeof window.tronWeb !== 'undefined') {
+      if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
+
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
 
         const budget = tronWeb
@@ -131,20 +189,18 @@ const PdfToQuiz = () => {
         await contract
           .createQuiz(quizId, questionCount, rewardPerScore)
           .send({ callValue: budget, from: walletAddress });
+        ('contract');
 
-        toast.success('Quiz successfully created.');
+        toast.success('Quiz successfully created');
         loadAllQuizzes();
 
         setFormData({
           creatorName: '',
+          websiteUrl: '',
           numParticipants: '',
           questionCount: '',
           rewardPerScore: '',
         });
-        setPdfFile(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
 
         setLoading(false);
         setOpen(true);
@@ -217,16 +273,15 @@ const PdfToQuiz = () => {
         const quizIndex = quizQids.indexOf(quizId);
         const plusoneindex = quizIndex + 1;
         await contract.endQuiz(plusoneindex).send({ from: walletAddress });
-
-        toast.success('Quiz has ended');
-        setOpen(false);
-        setStartDisabled(false);
-        setIsPublic(false);
-        setCloseDisabled(true);
-        setQuizCreated(false);
       } else {
         toast.error('Failed to End Quiz');
       }
+      toast.success('Quiz has ended');
+      setOpen(false);
+      setStartDisabled(false);
+      setIsPublic(false);
+      setCloseDisabled(true);
+      setQuizCreated(false);
     } catch (error) {
       toast.error('Failed to end the quiz');
       console.log(error);
@@ -238,17 +293,15 @@ const PdfToQuiz = () => {
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-
         const result = await contract.getAllQuizzes().call();
-
         setQuizIds(result[0]);
         setQuizQids(result[1]);
       } else {
         toast.error('Failed to load quizzes');
       }
     } catch (error) {
-      console.error(error);
       toast.error('Failed to load quizzes');
+      console.error(error);
     }
   };
 
@@ -269,8 +322,6 @@ const PdfToQuiz = () => {
     }
   }, [quizId, quizCreated]);
 
-  const baseUrl = import.meta.env.VITE_CLIENT_URI;
-
   return (
     <div
       className='flex items-center justify-center'
@@ -279,10 +330,9 @@ const PdfToQuiz = () => {
       <div className='max-w-4xl mx-auto'>
         <div className='text-center space-y-4 mb-8'>
           <h1 className='text-2xl md:text-5xl font-bold text-white'>
-            Create Quiz from
+            Create Quiz from &nbsp;
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400'>
-              {' '}
-              PDF{' '}
+              Website
             </span>
           </h1>
         </div>
@@ -290,7 +340,6 @@ const PdfToQuiz = () => {
         <form onSubmit={handleSubmit} className='space-y-6 text-sm md:text-md'>
           <div className='bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-xl'>
             <div className='space-y-6'>
-              {/* Creator Name Input */}
               <div className='space-y-2'>
                 <label className='text-white text-sm font-medium'>
                   Creator Name
@@ -300,13 +349,12 @@ const PdfToQuiz = () => {
                   name='creatorName'
                   value={formData.creatorName}
                   onChange={handleChange}
-                  className='w-full px-4 py-2 md:py-3  bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                  className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-md md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                   placeholder='Enter your name'
                   required
                 />
               </div>
 
-              {/* Grid for numeric inputs */}
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 <div className='space-y-2'>
                   <label className='text-white text-sm font-medium flex items-center gap-2'>
@@ -318,7 +366,7 @@ const PdfToQuiz = () => {
                     name='numParticipants'
                     value={formData.numParticipants}
                     onChange={handleChange}
-                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-md md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Number of participants'
                     min='1'
                     required
@@ -335,7 +383,7 @@ const PdfToQuiz = () => {
                     name='questionCount'
                     value={formData.questionCount}
                     onChange={handleChange}
-                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-md md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Number of questions'
                     min='1'
                     max='30'
@@ -353,51 +401,40 @@ const PdfToQuiz = () => {
                     name='rewardPerScore'
                     value={formData.rewardPerScore}
                     onChange={handleChange}
-                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-md md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
                     placeholder='Reward per score'
-                    min='0.0001'
+                    min='1'
                     required
                   />
                 </div>
               </div>
 
-              {/* PDF Upload Section */}
               <div className='space-y-2'>
                 <label className='text-white text-sm font-medium flex items-center gap-2'>
-                  <FileText size={16} />
-                  PDF Document
+                  <Globe size={16} />
+                  Website URL
                 </label>
-                <div className='relative'>
-                  <input
-                    id='pdf-upload'
-                    type='file'
-                    accept='application/pdf'
-                    onChange={handleFileChange}
-                    className='hidden'
-                    required
-                    ref={fileInputRef}
-                  />
-                  <label
-                    htmlFor='pdf-upload'
-                    className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-lg md:rounded-xl text-white flex items-center justify-center gap-2 cursor-pointer hover:bg-white/20 transition-colors'
-                  >
-                    <Upload size={20} />
-                    {pdfFile ? pdfFile.name : 'Choose PDF File'}
-                  </label>
-                </div>
+                <input
+                  type='url'
+                  name='websiteUrl'
+                  value={formData.websiteUrl}
+                  onChange={handleChange}
+                  className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-md md:rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+                  placeholder='e.g., https://example.com/info'
+                  required
+                />
               </div>
 
-              {/* Submit Button */}
               <button
                 type='submit'
                 disabled={loading}
-                className='w-full px-6 py-3 md:py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg md:rounded-xl text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50'
+                className='w-full px-6 py-3 md:py-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-md md:rounded-xl text-white font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50'
               >
                 {loading ? (
                   <CircularProgress size={24} color='inherit' />
                 ) : (
                   <>
-                    <FileText size={20} />
+                    <Globe size={20} />
                     Generate Quiz
                   </>
                 )}
@@ -406,7 +443,6 @@ const PdfToQuiz = () => {
           </div>
         </form>
 
-        {/* Dialog */}
         <Dialog
           open={open}
           onClose={(_, reason) =>
@@ -422,12 +458,11 @@ const PdfToQuiz = () => {
             },
           }}
         >
-          <DialogContent style={{ backgroundColor: '#7f1d1d' }}>
+          <DialogContent>
             <div className='grid md:grid-cols-2 gap-8'>
-              {/* QR Code Section */}
               <div className='flex flex-col items-center gap-6' ref={qrRef}>
                 <h2 className='text-2xl font-bold text-white'>
-                  Quiz ID: <span className='text-red-400'>#{quizId}</span>
+                  Quiz ID: <span className='text-red-400'>{quizId}</span>
                 </h2>
                 <div className='bg-white p-4 rounded-xl'>
                   <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
@@ -454,7 +489,6 @@ const PdfToQuiz = () => {
                 />
               </div>
 
-              {/* Participants Section */}
               <div className='space-y-4'>
                 <h2 className='text-2xl font-bold text-white text-center'>
                   Participants
@@ -476,10 +510,7 @@ const PdfToQuiz = () => {
             </div>
           </DialogContent>
 
-          <DialogActions
-            className='p-4 bg-white/5'
-            style={{ backgroundColor: '#7f1d1d' }}
-          >
+          <DialogActions className='p-4 bg-white/5'>
             <IconButton onClick={handleDownload} className='text-red-400'>
               <Download size={20} style={{ color: 'white' }} />
             </IconButton>
@@ -513,4 +544,4 @@ const PdfToQuiz = () => {
   );
 };
 
-export default PdfToQuiz;
+export default URLToQuiz;
