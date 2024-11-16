@@ -23,7 +23,7 @@ const AnimatedBackground = () => {
     const geometry = new THREE.SphereGeometry(2.25, 12, 12);
     const material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      wireframe: true
+      wireframe: true,
     });
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
@@ -62,7 +62,7 @@ const AnimatedBackground = () => {
     };
   }, []);
 
-  return <div ref={containerRef} className="w-full h-full" />;
+  return <div ref={containerRef} className='w-full h-full' />;
 };
 
 export default AnimatedBackground;
