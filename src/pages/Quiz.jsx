@@ -33,6 +33,7 @@ const Quiz = () => {
   const [quizQids, setQuizQids] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [metadata, setMetadata] = useState[{}]
 
   const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
@@ -193,6 +194,10 @@ const Quiz = () => {
           'Quiz score submitted successfully to the smart contract!'
         );
         navigate(`/leaderboards/${id}`);
+        const responsemetadata = await fetchNFTMetadata(1);
+        setMetadata(responsemetadata);
+        console.log(responsemetadata)
+
       } else {
         toast.error('TronLink not found. Please install TronLink.');
         setIsSubmitting(false);
@@ -204,6 +209,33 @@ const Quiz = () => {
       );
       console.log(err);
       setIsSubmitting(false);
+    }
+  };
+
+  const fetchNFTMetadata = async (nftId) => {
+    try {
+      if (typeof window.tronLink !== "undefined") {
+        const tronWeb = window.tronLink.tronWeb;
+        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+  
+        // Fetch the NFT data by calling the `nfts` function
+        const nftData = await contract.nfts(nftId).call();
+  
+        // Extract the metadataURI
+        const metadataURI = nftData.metadataURI;
+  
+        // Parse the JSON metadataURI
+        const metadata = JSON.parse(metadataURI);
+  
+        return metadata; // Return the parsed metadata object
+      } else {
+        toast.error("TronLink wallet not found!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Failed to fetch NFT metadata:", error);
+      toast.error("Error fetching NFT metadata");
+      return null;
     }
   };
 
