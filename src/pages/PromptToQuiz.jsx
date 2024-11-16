@@ -214,8 +214,9 @@ const PromptToQuiz = () => {
 
         const quizIndex = quizQids.indexOf(quizId);
         // console.log("Quiz Index",quizIndex);
-        const plusoneindex = quizIndex + 1;
+        const plusoneindex = quizIndex;
         // console.log("Plus One Index",plusoneindex);
+        console.log(walletAddress)
         await contract.endQuiz(plusoneindex).send({ from: walletAddress });
 
         // console.log('Transaction ID:', tx);
@@ -266,6 +267,7 @@ const PromptToQuiz = () => {
   };
 
   useEffect(() => {
+    console.log(walletAddress)
     if (quizId) {
       fetchParticipants();
       const interval = setInterval(fetchParticipants, 1000);

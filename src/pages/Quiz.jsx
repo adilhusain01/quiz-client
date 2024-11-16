@@ -176,7 +176,9 @@ const Quiz = () => {
 
         const qid = response.data.quizId;
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
-        const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
+        console.log("quiz index: ", quizIndex)
+        const plusoneindex = quizIndex; // Assuming quizIndex starts at 0
+        console.log("Plus one index: ",plusoneindex)
         const score = response.data.score * 1000000; // Adjust score as per contract needs
 
         // Use the score from the API response to join the quiz on the contract
