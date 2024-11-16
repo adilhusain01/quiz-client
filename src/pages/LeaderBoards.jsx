@@ -78,7 +78,9 @@ const LeaderBoards = () => {
         className='flex items-center justify-center'
         style={{ height: 'calc(100vh - 6rem)' }}
       >
-        <h1 className='text-4xl font-bold text-white'>Quiz not found!</h1>
+        <h1 className='text-2xl md:text-4xl font-bold text-white'>
+          Quiz not found!
+        </h1>
       </div>
     );
   }
@@ -90,45 +92,44 @@ const LeaderBoards = () => {
     >
       <div className='max-w-4xl w-full mx-auto px-4'>
         <div className='text-center space-y-4 mb-8'>
-          <h1 className='text-4xl md:text-5xl font-bold text-white'>
-            Quiz Leaderboard
+          <h1 className='text-2xl md:text-5xl font-bold text-white'>
+            Quiz Leaderboard &nbsp;
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-pink-400'>
-              {' '}
-              #{id}{' '}
+              #{id}
             </span>
           </h1>
         </div>
 
-        <div className='bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-xl space-y-6'>
+        <div className='bg-white/10 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-white/20 shadow-xl space-y-6'>
           {/* Quiz Stats */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-            <div className='bg-white/5 p-4 rounded-xl border border-white/10'>
+            <div className='flex flex-row md:flex-col items-center justify-between md:items-start md:justify-start bg-white/5 p-3 md:p-4 rounded-xl border border-white/10'>
               <div className='flex items-center gap-2 text-white'>
                 <HelpCircle size={20} />
                 <span className='text-sm font-medium'>Questions</span>
               </div>
-              <p className='text-2xl font-bold text-red-400 mt-2'>
+              <p className='text-xl md:text-2xl font-bold text-red-400 md:mt-2'>
                 {quiz.questions.length}
               </p>
             </div>
 
-            <div className='bg-white/5 p-4 rounded-xl border border-white/10'>
+            <div className='flex flex-row md:flex-col items-center justify-between md:items-start md:justify-start bg-white/5 p-3 md:p-4 rounded-xl border border-white/10'>
               <div className='flex items-center gap-2 text-white'>
                 <Users size={20} />
                 <span className='text-sm font-medium'>Participants</span>
               </div>
-              <p className='text-2xl font-bold text-red-400 mt-2'>
+              <p className='text-2xl md:text-2xl font-bold text-red-400 md:mt-2'>
                 {participants.length}
               </p>
             </div>
 
-            <div className='bg-white/5 p-4 rounded-xl border border-white/10'>
+            <div className='flex flex-row md:flex-col items-center justify-between md:items-start md:justify-start bg-white/5 p-3 p-4 rounded-xl border border-white/10'>
               <div className='flex items-center gap-2 text-white'>
                 <Trophy size={20} />
                 <span className='text-sm font-medium'>Status</span>
               </div>
               <p
-                className={`text-2xl font-bold mt-2 ${
+                className={`text-lg md:text-2xl font-bold md:mt-2 ${
                   quiz.isPublic ? 'text-green-400' : 'text-pink-400'
                 }`}
               >
@@ -138,14 +139,14 @@ const LeaderBoards = () => {
           </div>
 
           {/* Search and Sort Controls */}
-          <div className='flex flex-col md:flex-row gap-4 justify-between items-center'>
+          <div className='hidden md:flex flex-col md:flex-row gap-4 justify-between items-center'>
             <div className='relative w-full md:w-auto'>
               <input
                 type='text'
                 placeholder='Search participants...'
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className='w-full md:w-64 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 pl-10'
+                className='w-full md:w-64 px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 pl-10'
               />
               <Search
                 className='absolute left-3 top-3.5 text-red-400'
@@ -171,7 +172,7 @@ const LeaderBoards = () => {
             {sortedParticipants.map((participant, index) => (
               <div
                 key={participant.walletAddress}
-                className='flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors'
+                className='flex items-center justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors'
               >
                 <div className='flex items-center gap-4'>
                   <span className='text-red-400 font-medium'>{index + 1}</span>

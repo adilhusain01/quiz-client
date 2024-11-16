@@ -33,7 +33,7 @@ const Quiz = () => {
   const [quizQids, setQuizQids] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [metadata, setMetadata] = useState[{}]
+  const [metadata, setMetadata] = useState({});
 
   const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
 
@@ -178,7 +178,7 @@ const Quiz = () => {
         const qid = response.data.quizId;
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
         const plusoneindex = quizIndex + 1; // Assuming quizIndex starts at 0
-        console.log("Plus one index:  ",plusoneindex)
+        console.log('Plus one index:  ', plusoneindex);
         const score = response.data.score * 1000000; // Adjust score as per contract needs
 
         // Use the score from the API response to join the quiz on the contract
@@ -197,7 +197,6 @@ const Quiz = () => {
         // const responsemetadata = await fetchNFTMetadata(1);
         // setMetadata(responsemetadata);
         // console.log(responsemetadata)
-
       } else {
         toast.error('TronLink not found. Please install TronLink.');
         setIsSubmitting(false);
@@ -214,27 +213,27 @@ const Quiz = () => {
 
   const fetchNFTMetadata = async (nftId) => {
     try {
-      if (typeof window.tronLink !== "undefined") {
+      if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-  
+
         // Fetch the NFT data by calling the `nfts` function
         const nftData = await contract.nfts(nftId).call();
-  
+
         // Extract the metadataURI
         const metadataURI = nftData.metadataURI;
-  
+
         // Parse the JSON metadataURI
         const metadata = JSON.parse(metadataURI);
-  
+
         return metadata; // Return the parsed metadata object
       } else {
-        toast.error("TronLink wallet not found!");
+        toast.error('TronLink wallet not found!');
         return null;
       }
     } catch (error) {
-      console.error("Failed to fetch NFT metadata:", error);
-      toast.error("Error fetching NFT metadata");
+      console.error('Failed to fetch NFT metadata:', error);
+      toast.error('Error fetching NFT metadata');
       return null;
     }
   };
@@ -274,7 +273,7 @@ const Quiz = () => {
         className='flex items-center justify-center'
         style={{ height: 'calc(100vh - 6rem)' }}
       >
-        <Loader2 className='w-8 h-8 text-red-400 animate-spin' />
+        <Loader2 className='w-6 md:w-8 h-6 md:h-8 text-red-400 animate-spin' />
       </div>
     );
   }
@@ -286,8 +285,10 @@ const Quiz = () => {
         style={{ height: 'calc(100vh - 6rem)' }}
       >
         <div className='text-center space-y-4'>
-          <Trophy className='w-16 h-16 text-red-400 mx-auto' />
-          <h1 className='text-4xl font-bold text-white'>Quiz has ended</h1>
+          <Trophy className='w-12 md:w-16 h-12 md:h-16 text-red-400 mx-auto' />
+          <h1 className='text-2xl md:text-4xl font-bold text-white'>
+            Quiz has ended
+          </h1>
           <p className='text-red-200'>
             Check the leaderboard to see the results
           </p>
@@ -303,15 +304,15 @@ const Quiz = () => {
         style={{ height: 'calc(100vh - 6rem)' }}
       >
         <div className='text-center flex flex-col items-center justify-center space-y-6'>
-          <h1 className='text-4xl font-bold text-white'>
+          <h1 className='text-2xl md:text-4xl font-bold text-white'>
             {message.length > 0 ? message : "Quiz hasn't started yet"}
           </h1>
-          <p className='text-red-200'>
+          <p className='text-md md:text-lg text-red-200'>
             {message.length > 0 ? '' : 'Please wait for the quiz to begin'}
           </p>
           <button
             onClick={() => window.location.reload()}
-            className='flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-opacity'
+            className='text-md md:text-lg flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-opacity'
           >
             <RefreshCcw size={20} />
             Refresh
@@ -345,10 +346,10 @@ const Quiz = () => {
           className='space-y-4'
           style={{ backgroundColor: '#7f1d1d' }}
         >
-          <h2 className='text-2xl font-bold text-white text-center'>
+          <h2 className='text-xl md:text-2xl font-bold text-white text-center'>
             Welcome to the Quiz
           </h2>
-          <p className='text-red-200 text-center'>
+          <p className='text-md md:text-lg text-red-200 text-center'>
             Please enter your name to begin
           </p>
           <input
@@ -356,11 +357,11 @@ const Quiz = () => {
             value={participantName}
             onChange={(e) => setParticipantName(e.target.value)}
             placeholder='Enter your name'
-            className='w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
+            className='w-full px-4 py-2 md:py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-red-200 focus:outline-none focus:ring-2 focus:ring-red-400'
           />
           <button
             onClick={handleNameSubmit}
-            className='w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-opacity'
+            className='w-full px-6 py-2 md:py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-opacity'
           >
             Start Quiz
           </button>
@@ -416,7 +417,7 @@ const Quiz = () => {
               ) : (
                 <>
                   {/* Question */}
-                  <h2 className='text-2xl font-bold text-white'>
+                  <h2 className='text-lg md:text-2xl font-bold text-white'>
                     {currentQuestion.question}
                   </h2>
 
@@ -429,7 +430,7 @@ const Quiz = () => {
                           onClick={() =>
                             handleAnswerChange(currentQuestion._id, key)
                           }
-                          className={`relative p-6 text-left rounded-xl border transition-all ${
+                          className={`relative p-3 md:p-6 text-md md:text-lg text-left rounded-lg md:rounded-xl border transition-all ${
                             answers[currentQuestion._id] === key
                               ? 'bg-red-500/20 border-red-400'
                               : 'bg-white/5 border-white/10 hover:bg-white/10'
@@ -456,7 +457,7 @@ const Quiz = () => {
                     <button
                       onClick={handleNextQuestion}
                       disabled={!answers[currentQuestion._id]}
-                      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                      className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl font-medium transition-all ${
                         answers[currentQuestion._id]
                           ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:opacity-90'
                           : 'bg-white/10 text-white/50 cursor-not-allowed'

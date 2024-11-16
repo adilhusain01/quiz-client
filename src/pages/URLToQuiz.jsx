@@ -461,11 +461,14 @@ const URLToQuiz = () => {
           <DialogContent>
             <div className='grid md:grid-cols-2 gap-8'>
               <div className='flex flex-col items-center gap-6' ref={qrRef}>
-                <h2 className='text-2xl font-bold text-white'>
+                <h2 className='text-xl md:text-2xl font-bold text-white'>
                   Quiz ID: <span className='text-red-400'>{quizId}</span>
                 </h2>
                 <div className='bg-white p-4 rounded-xl'>
-                  <QRCodeSVG value={`${baseUrl}/quiz/${quizId}`} size={256} />
+                  <QRCodeSVG
+                    value={`${baseUrl}/quiz/${quizId}`}
+                    className='w-48 h-48 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-72 lg:h-72'
+                  />
                 </div>
                 <TextField
                   value={`${baseUrl}/quiz/${quizId}`}
@@ -490,7 +493,7 @@ const URLToQuiz = () => {
               </div>
 
               <div className='space-y-4'>
-                <h2 className='text-2xl font-bold text-white text-center'>
+                <h2 className='text-xl md:text-2xl font-bold text-white text-center'>
                   Participants
                 </h2>
                 <div className='bg-white/10 rounded-xl p-4 max-h-[300px] overflow-y-auto'>
