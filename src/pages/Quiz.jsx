@@ -194,9 +194,9 @@ const Quiz = () => {
           'Quiz score submitted successfully to the smart contract!'
         );
         navigate(`/leaderboards/${id}`);
-        const responsemetadata = await fetchNFTMetadata(1);
-        setMetadata(responsemetadata);
-        console.log(responsemetadata)
+        // const responsemetadata = await fetchNFTMetadata(1);
+        // setMetadata(responsemetadata);
+        // console.log(responsemetadata)
 
       } else {
         toast.error('TronLink not found. Please install TronLink.');
