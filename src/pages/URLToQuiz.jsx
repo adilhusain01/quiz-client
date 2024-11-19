@@ -34,7 +34,7 @@ const URLToQuiz = () => {
   const qrRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
   const [quizCreated, setQuizCreated] = useState(false);
 
@@ -187,7 +187,7 @@ const URLToQuiz = () => {
           .integerValue();
 
         await contract
-          .createQuiz(quizId, questionCount, rewardPerScore, creatorName)
+          .createQuiz(quizId, questionCount, rewardPerScore)
           .send({ callValue: budget, from: walletAddress });
         ('contract');
 

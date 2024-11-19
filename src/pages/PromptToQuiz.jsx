@@ -129,8 +129,7 @@ const PromptToQuiz = () => {
           .createQuiz(
             quizId, // Use the quizId received from the API
             questionCount,
-            rewardPerScore,
-            creatorName
+            rewardPerScore
           )
           .send({ callValue: budget, from: walletAddress });
 

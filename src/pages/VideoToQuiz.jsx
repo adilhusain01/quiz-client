@@ -34,7 +34,7 @@ const VideoToQuiz = () => {
   const qrRef = useRef();
   const [quizIds, setQuizIds] = useState([]);
   const [quizQids, setQuizQids] = useState([]);
-  const CONTRACT_ADDRESS = 'TThMA5VAr88dk9Q2ZbA4qPtsecXc1LRfZN';
+  const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
   const baseUrl = import.meta.env.VITE_CLIENT_URI;
   const [quizCreated, setQuizCreated] = useState(false);
 
@@ -161,6 +161,8 @@ const VideoToQuiz = () => {
         }
       );
 
+      console.log(response.data);
+
       setQuizCreated(true);
 
       const quizId = response.data.quizId;
@@ -168,7 +170,6 @@ const VideoToQuiz = () => {
 
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
-
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
 
         const budget = tronWeb
@@ -176,7 +177,7 @@ const VideoToQuiz = () => {
           .integerValue();
 
         await contract
-          .createQuiz(quizId, questionCount, rewardPerScore, creatorName)
+          .createQuiz(quizId, questionCount, rewardPerScore)
           .send({ callValue: budget, from: walletAddress });
         ('contract');
 

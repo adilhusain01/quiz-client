@@ -129,7 +129,7 @@ const PdfToQuiz = () => {
           .integerValue();
 
         const tx = await contract
-          .createQuiz(quizId, questionCount, rewardPerScore, creatorName)
+          .createQuiz(quizId, questionCount, rewardPerScore)
           .send({ callValue: budget, from: walletAddress });
 
         toast.success('Quiz successfully created.');
