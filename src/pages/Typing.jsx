@@ -63,13 +63,17 @@ const Typing = () => {
     }
   };
 
-  // Add a new function to handle game setup
+  // Modify the handleGameSetup function
   const handleGameSetup = () => {
     if (!difficulty || !category) {
       toast.error("Please select both difficulty and category");
       return;
     }
+    setStartTime(Date.now()); // Set start time when game begins
+    setWordsTyped(0); // Reset words typed
+    setIncorrectWords(0); // Reset incorrect words
     fetchWords();
+    startTimer();
   };
 
   const startTimer = useCallback(() => {
@@ -112,11 +116,14 @@ const Typing = () => {
     }
   };
 
+  // Modify the endGame function
   const endGame = useCallback(() => {
     setIsGameOver(true);
-    const timeElapsed = (Date.now() - startTime) / 1000 / 60; // in minutes
-    const wpm = Math.round(wordsTyped / timeElapsed);
-    setTypingSpeed(wpm);
+    if (startTime) {
+      const timeElapsed = (Date.now() - startTime) / 1000 / 60; // Convert to minutes
+      const wpm = Math.round(wordsTyped / timeElapsed);
+      setTypingSpeed(wpm);
+    }
   }, [startTime, wordsTyped]);
 
   // Format time function
@@ -132,6 +139,10 @@ const Typing = () => {
     setTimer(60);
     setIsGameOver(false);
     setInputText("");
+    setWordsTyped(0);
+    setIncorrectWords(0);
+    setStartTime(Date.now()); // Reset start time
+    setTypingSpeed(0);
     fetchWords();
     startTimer();
   };
