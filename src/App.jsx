@@ -9,8 +9,9 @@ const PromptToQuiz = lazy(() => import('./pages/PromptToQuiz'));
 const LeaderBoards = lazy(() => import('./pages/LeaderBoards'));
 const Quiz = lazy(() => import('./pages/Quiz'));
 const URLToQuiz = lazy(() => import('./pages/URLToQuiz'));
-import LoadingSpinner from './components/LoadingSpinner';
 const VideoToQuiz = lazy(() => import('./pages/VideoToQuiz'));
+const Typing = lazy(() => import('./pages/Typing'));
+import LoadingSpinner from './components/LoadingSpinner';
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
               <Route path='/videoToQuiz' element={<VideoToQuiz />} />
               <Route path='/quiz/:id' element={<Quiz />} />
               <Route path='/leaderboards/:id' element={<LeaderBoards />} />
+              <Route path='/typing' element={<Typing />} />
             </Route>
           </Routes>
         </Suspense>
