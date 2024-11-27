@@ -32,9 +32,7 @@ const Home = () => {
                 <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Play className="text-white" size={24} />
                 </div>
-                <span className="text-lg font-semibold text-white">
-                  Quizzes
-                </span>
+                <span className="text-lg font-semibold text-white">Quizz</span>
               </div>
             </Link>
 
