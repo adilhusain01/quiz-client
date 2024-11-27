@@ -471,11 +471,11 @@ const Typing = () => {
                             : "border-white/20 focus:ring-red-400"
                         }`}
                     />
-                    {inputText && inputText !== currentWord && (
+                    {/* {inputText && inputText !== currentWord && (
                       <p className="text-red-400 text-center">
                         Incorrect! Try again.
                       </p>
-                    )}
+                    )} */}
                   </div>
                 </>
               )}
