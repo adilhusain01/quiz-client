@@ -24,7 +24,6 @@ const Typing = () => {
   const [nameDialogOpen, setNameDialogOpen] = useState(true);
   const [startTime, setStartTime] = useState(null);
   const [wordsTyped, setWordsTyped] = useState(0);
-  const [typingSpeed, setTypingSpeed] = useState(0);
   const [incorrectWords, setIncorrectWords] = useState(0);
 
   // Game state variables
@@ -117,9 +116,6 @@ const Typing = () => {
 
   const endGame = useCallback(() => {
     setIsGameOver(true);
-    if (startTime) {
-      setTypingSpeed(wordsTyped);
-    }
   }, [startTime, wordsTyped]);
 
   // Format time function
@@ -340,7 +336,7 @@ const Typing = () => {
                         <div>
                           <p className="text-red-200 text-sm">Typing Speed</p>
                           <p className="text-2xl font-bold text-white">
-                            {typingSpeed} WPM
+                            {wordsTyped} WPM
                           </p>
                         </div>
                       </div>
