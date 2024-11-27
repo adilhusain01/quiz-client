@@ -31,18 +31,18 @@ const QuizOptions = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-20">
       <h1 className="text-4xl font-bold text-white text-center mb-12">
         Quiz Options
       </h1>
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-xl mx-auto space-y-8">
         {/* Create Quiz Options */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-10 border border-white/20">
           <h2 className="text-2xl font-semibold text-white mb-6">
             Create a Quiz By
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {[
               { path: "/pdfToQuiz", icon: FileText, label: "PDF" },
               { path: "/promptToQuiz", icon: BookOpen, label: "Prompt" },
