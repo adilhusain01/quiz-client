@@ -126,6 +126,7 @@ const Typing = () => {
   };
 
   const resetGame = () => {
+    // Reset all game states
     setScore(0);
     setTimer(60);
     setIsGameOver(false);
@@ -133,13 +134,19 @@ const Typing = () => {
     setWordsTyped(0);
     setIncorrectWords(0);
     setStartTime(null);
-    setTypingSpeed(0);
+    setWordList([]); // Clear the word list
+    setCurrentWord(""); // Clear current word
+
+    // Reset game setup states
     setDifficulty("");
     setCategory("");
     setSetupComplete(false);
+
+    // Reset participant name and show name dialog
     setParticipantName("");
     setNameDialogOpen(true);
   };
+
   return (
     <div
       className="flex items-center justify-center px-4"
