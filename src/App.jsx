@@ -12,6 +12,7 @@ const URLToQuiz = lazy(() => import("./pages/URLToQuiz"));
 const VideoToQuiz = lazy(() => import("./pages/VideoToQuiz"));
 const Typing = lazy(() => import("./pages/Typing"));
 const MemoryChallenge = lazy(() => import("./pages/MemoryChallenge"));
+const QuizOptions = lazy(() => import("./pages/QuizOptions"));
 import LoadingSpinner from "./components/LoadingSpinner";
 
 const App = () => {
@@ -30,6 +31,7 @@ const App = () => {
               <Route path="/leaderboards/:id" element={<LeaderBoards />} />
               <Route path="/typing" element={<Typing />} />
               <Route path="/memoryChallenge" element={<MemoryChallenge />} />
+              <Route path="/quiz-options" element={<QuizOptions />} />
             </Route>
           </Routes>
         </Suspense>
