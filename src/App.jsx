@@ -13,6 +13,8 @@ const VideoToQuiz = lazy(() => import("./pages/VideoToQuiz"));
 const Typing = lazy(() => import("./pages/Typing"));
 const MemoryChallenge = lazy(() => import("./pages/MemoryChallenge"));
 const QuizOptions = lazy(() => import("./pages/QuizOptions"));
+const BrokenLink = lazy(() => import("./pages/BrokenLink"));
+const ServerError = lazy(() => import("./pages/ServerError"));
 import LoadingSpinner from "./components/LoadingSpinner";
 
 const App = () => {
@@ -33,6 +35,8 @@ const App = () => {
               <Route path="/memoryChallenge" element={<MemoryChallenge />} />
               <Route path="/quiz-options" element={<QuizOptions />} />
             </Route>
+            <Route path="/500" element={<ServerError />} />
+            <Route path="*" element={<BrokenLink />} />
           </Routes>
         </Suspense>
       </Router>
