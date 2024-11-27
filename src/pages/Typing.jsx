@@ -63,7 +63,6 @@ const Typing = () => {
     }
   };
 
-  // Modify the handleGameSetup function
   const handleGameSetup = () => {
     if (!difficulty || !category) {
       toast.error("Please select both difficulty and category");
@@ -116,13 +115,10 @@ const Typing = () => {
     }
   };
 
-  // Modify the endGame function
   const endGame = useCallback(() => {
     setIsGameOver(true);
     if (startTime) {
-      const timeElapsed = (Date.now() - startTime) / 1000 / 60; // Convert to minutes
-      const wpm = Math.round(wordsTyped / timeElapsed);
-      setTypingSpeed(wpm);
+      setTypingSpeed(wordsTyped);
     }
   }, [startTime, wordsTyped]);
 
@@ -133,7 +129,6 @@ const Typing = () => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  // Reset game
   const resetGame = () => {
     setScore(0);
     setTimer(60);
@@ -141,12 +136,14 @@ const Typing = () => {
     setInputText("");
     setWordsTyped(0);
     setIncorrectWords(0);
-    setStartTime(Date.now()); // Reset start time
+    setStartTime(null);
     setTypingSpeed(0);
-    fetchWords();
-    startTimer();
+    setDifficulty("");
+    setCategory("");
+    setSetupComplete(false);
+    setParticipantName("");
+    setNameDialogOpen(true);
   };
-
   return (
     <div
       className="flex items-center justify-center px-4"
