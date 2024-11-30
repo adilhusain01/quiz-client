@@ -19,6 +19,7 @@ const Quiz = () => {
   const { walletAddress, connectWallet } = useContext(WalletContext);
   const [loading, setLoading] = useState(true);
   const [quiz, setQuiz] = useState(null);
+  const [quizCreator, setQuizCreator] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [participantName, setParticipantName] = useState('');
@@ -33,9 +34,9 @@ const Quiz = () => {
   const [quizQids, setQuizQids] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [metadata, setMetadata] = useState({});
 
   const CONTRACT_ADDRESS = 'TNsLWvFRGGE5MQPqyMaURh1i3efiTC4PQL';
+  const NFT_CONTRACT = 'TTgJKEbKmznmG6XtT9nHG6hQXHQ4geeGSx';
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -59,6 +60,7 @@ const Quiz = () => {
         setQuiz(response.data);
         setQuizStarted(response.data.isPublic);
         setQuizEnded(response.data.isFinished);
+        setQuizCreator(response.data.creatorName)
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.error);
@@ -174,6 +176,7 @@ const Quiz = () => {
       if (typeof window.tronLink !== 'undefined') {
         const tronWeb = window.tronLink.tronWeb;
         const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
+        const nft = await tronWeb.contract().at(NFT_CONTRACT);
 
         const qid = response.data.quizId;
         const quizIndex = quizQids.indexOf(qid); // Get quiz index based on QID
@@ -193,6 +196,20 @@ const Quiz = () => {
         toast.success(
           'Quiz score submitted successfully to the smart contract!'
         );
+
+        await nft
+          .mint(
+            walletAddress,
+            participantName,
+            quizCreator,
+            id
+          )
+          .send({ from: walletAddress })
+        
+        toast.success(
+          'POAP minted successfully'
+        )
+
         navigate(`/leaderboards/${id}`);
         // const responsemetadata = await fetchNFTMetadata(1);
         // setMetadata(responsemetadata);
@@ -208,33 +225,6 @@ const Quiz = () => {
       );
       console.log(err);
       setIsSubmitting(false);
-    }
-  };
-
-  const fetchNFTMetadata = async (nftId) => {
-    try {
-      if (typeof window.tronLink !== 'undefined') {
-        const tronWeb = window.tronLink.tronWeb;
-        const contract = await tronWeb.contract().at(CONTRACT_ADDRESS);
-
-        // Fetch the NFT data by calling the `nfts` function
-        const nftData = await contract.nfts(nftId).call();
-
-        // Extract the metadataURI
-        const metadataURI = nftData.metadataURI;
-
-        // Parse the JSON metadataURI
-        const metadata = JSON.parse(metadataURI);
-
-        return metadata; // Return the parsed metadata object
-      } else {
-        toast.error('TronLink wallet not found!');
-        return null;
-      }
-    } catch (error) {
-      console.error('Failed to fetch NFT metadata:', error);
-      toast.error('Error fetching NFT metadata');
-      return null;
     }
   };
 
