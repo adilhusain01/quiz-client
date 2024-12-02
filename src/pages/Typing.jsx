@@ -149,7 +149,7 @@ const Typing = () => {
 
   return (
     <div
-      className="flex items-center justify-center px-4"
+      className="flex items-center justify-center px-4 py-10 md:py-16"
       style={{ height: "calc(100vh - 6rem)" }}
     >
       {/* Name Dialog */}
@@ -304,7 +304,7 @@ const Typing = () => {
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="text-3xl font-bold text-white text-center"
+                    className="text-xl md:text-3xl font-bold text-white text-center"
                   >
                     Game Complete! 🎉
                   </motion.h2>
@@ -323,7 +323,7 @@ const Typing = () => {
                         </div>
                         <div>
                           <p className="text-red-200 text-sm">Final Score</p>
-                          <p className="text-2xl font-bold text-white">
+                          <p className="text-xl md:text-2xl font-bold text-white">
                             {score}
                           </p>
                         </div>
@@ -342,7 +342,7 @@ const Typing = () => {
                         </div>
                         <div>
                           <p className="text-red-200 text-sm">Typing Speed</p>
-                          <p className="text-2xl font-bold text-white">
+                          <p className="text-xl md:text-2xl font-bold text-white">
                             {wordsTyped} WPM
                           </p>
                         </div>
@@ -361,7 +361,7 @@ const Typing = () => {
                         </div>
                         <div>
                           <p className="text-red-200 text-sm">Words Typed</p>
-                          <p className="text-2xl font-bold text-white">
+                          <p className="text-xl md:text-2xl font-bold text-white">
                             {wordsTyped}
                           </p>
                         </div>
@@ -382,7 +382,7 @@ const Typing = () => {
                           <p className="text-red-200 text-sm">
                             Incorrect Words
                           </p>
-                          <p className="text-2xl font-bold text-white">
+                          <p className="text-xl md:text-2xl font-bold text-white">
                             {incorrectWords}
                           </p>
                         </div>
@@ -417,7 +417,7 @@ const Typing = () => {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.9 }}
                     onClick={resetGame}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-all hover:scale-105 active:scale-95"
+                    className="text-md md:text-xl flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl text-white font-medium hover:opacity-90 transition-all hover:scale-105 active:scale-95"
                   >
                     <RefreshCcw size={20} />
                     Play Again
@@ -449,10 +449,10 @@ const Typing = () => {
 
                   {/* Word to Type */}
                   <div className="text-center">
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                    <h2 className="text-xl md:text-3xl font-bold text-white mb-4">
                       Type this word:
                     </h2>
-                    <p className="text-3xl md:text-4xl font-bold text-red-300 mb-6">
+                    <p className="text-2xl md:text-4xl font-bold text-red-300 mb-6">
                       {currentWord}
                     </p>
                   </div>

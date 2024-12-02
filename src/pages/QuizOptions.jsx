@@ -31,7 +31,7 @@ const QuizOptions = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-10 md:py-16">
       <h1 className="text-4xl font-bold text-white text-center mb-12">
         Quiz Options
       </h1>
@@ -42,7 +42,7 @@ const QuizOptions = () => {
           <h2 className="text-2xl font-semibold text-white mb-6">
             Create a Quiz By
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { path: "/pdfToQuiz", icon: FileText, label: "PDF" },
               { path: "/promptToQuiz", icon: BookOpen, label: "Prompt" },
@@ -72,7 +72,7 @@ const QuizOptions = () => {
           <h2 className="text-2xl font-semibold text-white mb-6">
             Join a Quiz
           </h2>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             <input
               type="text"
               value={joinQuizCode}

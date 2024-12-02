@@ -135,70 +135,52 @@ const LeaderBoards = () => {
     if (!nft) return null;
 
     const tronScanUrl = `https://nile.tronscan.org/#/contract/TTgJKEbKmznmG6XtT9nHG6hQXHQ4geeGSx/code`; // Replace with your contract address
-    const tronScanTokenUrl = `https://nile.tronscan.org/#/token/${participant.nftTokenId}`;
-    const ipfsUrl = nft.imageUrl;
+    const ipfsUrl = nft?.imageUrl;
 
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 max-w-lg w-full mx-4">
           <div className="space-y-4">
             <img
-              src={nft.imageUrl}
+              src={nft?.imageUrl}
               alt="NFT"
-              className="w-full h-64 object-cover rounded-xl"
+              className="w-full md:h-128 object-cover rounded-xl"
             />
             <div className="space-y-2 text-white">
-              <h3 className="text-xl font-bold">NFT Details</h3>
-              <p>
-                <span className="text-red-400">Participant:</span>{" "}
-                {nft.participantName}
-              </p>
-              <p>
-                <span className="text-red-400">Quiz Creator:</span>{" "}
-                {nft.quizCreatorName}
-              </p>
-              <p>
-                <span className="text-red-400">Quiz Name:</span> {nft.quizName}
-              </p>
-              <p>
-                <span className="text-red-400">Token ID:</span>{" "}
-                {participant.nftTokenId}
-              </p>
-
+              <h3 className="text-lg md:text-xl font-bold">NFT Details</h3>
+              <div className="flex flex-row  items-center justify-between">
+                <p>
+                  <span className="text-red-400">Participant:</span>{" "}
+                  {nft?.participantName}
+                </p>
+                <p>
+                  <span className="text-red-400">Quiz Creator:</span>{" "}
+                  {nft?.quizCreatorName}
+                </p>
+              </div>
+              <div className="flex flex-row items-center justify-between">
+                <p>
+                  <span className="text-red-400">Quiz Name:</span>{" "}
+                  {nft?.quizName}
+                </p>
+                <p>
+                  <span className="text-red-400">Token ID:</span>{" "}
+                  {participant?.nftTokenId}
+                </p>
+              </div>
               {/* Verification Links */}
               <div className="space-y-2 mt-4">
-                <h4 className="text-lg font-semibold">Verify Ownership</h4>
-                <div className="flex flex-col gap-2">
+                <h4 className="text-lg md:text-lg font-semibold">
+                  Verify Ownership
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
                   <a
                     href={tronScanUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
+                    className="flex items-center justify-between px-4 py-1 md:py-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
                   >
-                    <span>View Contract on TronScan</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-
-                  <a
-                    href={tronScanTokenUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
-                  >
-                    <span>View Token on TronScan</span>
+                    <span className="text-sm md:text-md">Contract</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -219,9 +201,9 @@ const LeaderBoards = () => {
                     href={ipfsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
+                    className="flex items-center justify-between px-4 py-1 md:py-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors"
                   >
-                    <span>View Original on IPFS</span>
+                    <span className="text-sm md:text-md">See on IPFS</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -237,16 +219,15 @@ const LeaderBoards = () => {
                       />
                     </svg>
                   </a>
+                  <button
+                    onClick={onClose}
+                    className="text-sm md:text-md w-full py-1 md:py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
             </div>
-
-            <button
-              onClick={onClose}
-              className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
-            >
-              Close
-            </button>
           </div>
         </div>
       </div>
@@ -345,50 +326,36 @@ const LeaderBoards = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-red-400 font-medium">{index + 1}</span>
                   <div className="flex items-center gap-2">
-                    {nftData[participant.walletAddress] ? (
-                      <div
-                        onClick={() =>
-                          setSelectedNFT(nftData[participant.walletAddress])
-                        }
-                        className="relative group cursor-pointer"
-                      >
-                        <img
-                          src={nftData[participant.walletAddress].imageUrl}
-                          alt="NFT"
-                          className="w-12 h-12 rounded-full transition-transform transform group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                          <span className="text-xs text-white text-center">
-                            View NFT
-                          </span>
-                        </div>
-                      </div>
-                    ) : nftLoading ? (
-                      <div className="w-12 h-12 rounded-full bg-white/10 animate-pulse" />
-                    ) : null}
                     <span className="text-white">
                       {participant.participantName}
                     </span>
                   </div>
                 </div>
+                <button
+                  className="text-pink-400 font-bold"
+                  onClick={() =>
+                    setSelectedNFT(nftData[participant.walletAddress])
+                  }
+                >
+                  View NFT
+                </button>
                 <span className="text-pink-400 font-bold">
                   {participant.score}
                 </span>
               </div>
             ))}
-
-            {selectedNFT && (
-              <NFTModal
-                nft={selectedNFT}
-                participant={participants.find(
-                  (p) => nftData[p.walletAddress] === selectedNFT
-                )}
-                onClose={() => setSelectedNFT(null)}
-              />
-            )}
           </div>
         </div>
       </div>
+      {selectedNFT && (
+        <NFTModal
+          nft={selectedNFT}
+          participant={participants.find(
+            (p) => nftData[p.walletAddress] === selectedNFT
+          )}
+          onClose={() => setSelectedNFT(null)}
+        />
+      )}
     </div>
   );
 };
